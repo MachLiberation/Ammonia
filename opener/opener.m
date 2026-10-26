@@ -2,159 +2,495 @@
 //  opener.c
 //  opener
 //
-//  Created by whisper on 9/2/23.
-//
-#include <Foundation/Foundation.h>
+
 #include "opener.h"
-#include <mach/task_policy.h>
-#include <string.h>
+
+#include <dirent.h>
+#include <dlfcn.h>
+#include <errno.h>
+#include <limits.h>
+#include <mach-o/dyld.h>
+#include <pthread.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <mach/mach.h>
-#include <libproc.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <syslog.h>
 
-const char *GetExePath(void) {
-    uint32_t bufsize = 0;
-    _NSGetExecutablePath(NULL, &bufsize);
-    char *executablePath = malloc(bufsize);
-    _NSGetExecutablePath(&executablePath[0], &bufsize);
-    return executablePath;
-}
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
-void Open(void * interceptor) { 
-    DIR *dr;
-    struct dirent *en;
-    dr = opendir(SupportFolderP "tweaks/"); // Open the directory
-    if (dr) {
-        while ((en = readdir(dr)) != NULL) {
-            if (en->d_type == DT_REG) {
-                char full_path[PATH_MAX];
-                snprintf(full_path, sizeof(full_path), "%stweaks/%s", SupportFolderP, en->d_name);
-
-                // Construct paths for whitelist and blacklist files
-                char whitelist_file[PATH_MAX];
-                snprintf(whitelist_file, sizeof(whitelist_file), "%stweaks/%s.whitelist", SupportFolderP, en->d_name);
-
-                char blacklist_file[PATH_MAX];
-                snprintf(blacklist_file, sizeof(blacklist_file), "%stweaks/%s.blacklist", SupportFolderP, en->d_name);
-
-                const char *exe_path = GetExePath();
-                bool should_load = false;
-
-                // Priority 1: whitelist
-                FILE *whitelist_fp = fopen(whitelist_file, "r");
-                if (whitelist_fp) {
-                    char process_name[256];
-                    while (fgets(process_name, sizeof(process_name), whitelist_fp) != NULL) {
-                        size_t len = strlen(process_name);
-                        if (len > 0 && process_name[len - 1] == '\n') {
-                            process_name[len - 1] = '\0';
-                        }
-
-                        if (strstr(exe_path, process_name) != NULL) {
-                            should_load = true;
-                            break;
-                        }
-                    }
-                    fclose(whitelist_fp);
-
-                    if (!should_load) {
-                        syslog(LOG_INFO, "Process %s is not whitelisted for %s.", exe_path, en->d_name);
-                        goto cleanup;
-                    }
-                } else {
-                    // Priority 2: blacklist
-                    FILE *blacklist_fp = fopen(blacklist_file, "r");
-                    if (blacklist_fp) {
-                        should_load = true;
-                        char process_name[256];
-                        while (fgets(process_name, sizeof(process_name), blacklist_fp) != NULL) {
-                            size_t len = strlen(process_name);
-                            if (len > 0 && process_name[len - 1] == '\n') {
-                                process_name[len - 1] = '\0';
-                            }
-
-                            if (strstr(exe_path, process_name) != NULL) {
-                                should_load = false;
-                                syslog(LOG_INFO, "Process %s is blacklisted for %s.", exe_path, en->d_name);
-                                break;
-                            }
-                        }
-                        fclose(blacklist_fp);
-                        if (!should_load) {
-                            goto cleanup;
-                        }
-                    } else {
-                        // Neither whitelist nor blacklist exists — skip
-                        goto cleanup;
-                    }
-                }
-
-                // Load the dylib
-                void *handle = dlopen(full_path, RTLD_NOW | RTLD_GLOBAL);
-                if (handle == NULL) {
-                    syslog(LOG_ERR, "Error loading %s: %s", full_path, dlerror());
-                } else {
-                    void (*LoadFunction)(void *) = dlsym(handle, "LoadFunction");
-                    if (LoadFunction != NULL) {
-                        LoadFunction(interceptor);
-                    }
-                }
-
-            cleanup:
-                continue;
-            }
-        }
-        closedir(dr);
-    } else {
-        syslog(LOG_ERR, "Error opening tweaks directory.");
-    }
-    closelog();
-}
-
-int IsForegroundProcess()
-{
-    task_t currentTask = mach_task_self();
-    task_category_policy_data_t category_policy;
-    mach_msg_type_number_t task_info_count = TASK_CATEGORY_POLICY_COUNT;
-    boolean_t get_default = FALSE;
-    kern_return_t result = task_policy_get(currentTask, TASK_CATEGORY_POLICY, (task_policy_t)&category_policy, &task_info_count, &get_default);
-    
-    if (result != KERN_SUCCESS)
-    {
-        fprintf(stderr, "Error getting task category policy: %s\n", mach_error_string(result));
-        return -1; // or handle the error appropriately
-    }
-
-    return !(category_policy.role & TASK_BACKGROUND_APPLICATION) ||
-           !(category_policy.role & TASK_FOREGROUND_APPLICATION) ||
-    //       !(category_policy.role & TASK_UNSPECIFIED) || // a gamble
-           !(category_policy.role & TASK_DEFAULT_APPLICATION);
-}
-
-static bool gum_loaded = false;
-
+typedef void (*LoadFunction_t)(void *);
 typedef void (*GumInitEmbeddedFunc_t)(void);
 typedef void *(*GumInterceptorObtainFunc_t)(void);
-typedef void (*GumInterceptorBeginTransactionFunc_t)(void *interceptor);
-typedef void (*GumInterceptorEndTransactionFunc_t)(void *interceptor);
-typedef bool (*GumInterceptorReplaceFunc_t)(void *interceptor,
-                                            void *target,
-                                            void *replacement,
-                                            void *user_data,
-                                            void **out_original);
-typedef bool (*GumInterceptorRevertFunc_t)(void *interceptor,
-                                           void *target);
 
+static pthread_mutex_t opener_lock = PTHREAD_MUTEX_INITIALIZER;
+static bool opener_running = false;
+static bool opener_complete = false;
 
-void __attribute__((constructor)) ctor_main(void) {
-    // Make frida interceptor availible to tweaks
-    void *hooking = dlopen("/private/var/ammonia/core/fridagum.dylib", RTLD_NOW | RTLD_GLOBAL);
-    GumInitEmbeddedFunc_t GumInitEmbeddedFunc = dlsym(hooking, "gum_init_embedded");
-    GumInterceptorObtainFunc_t GumInterceptorObtainFunc = dlsym(hooking, "gum_interceptor_obtain");
-    if (!gum_loaded) {
-        GumInitEmbeddedFunc();
-        gum_loaded = true;
+static void *gum_handle = NULL;
+static void *gum_interceptor = NULL;
+static pthread_once_t gum_init_once = PTHREAD_ONCE_INIT;
+static bool gum_init_success = false;
+
+static void initialize_gum(void);
+
+/*
+ * Returns a heap-allocated executable path.
+ * The caller owns the returned memory.
+ */
+char *GetExePath(void)
+{
+    uint32_t size = 0;
+
+    (void)_NSGetExecutablePath(NULL, &size);
+
+    if (size == 0) {
+        syslog(LOG_ERR, "GetExePath: unable to determine path size");
+        return NULL;
     }
 
-    Open(GumInterceptorObtainFunc());
+    char *buffer = malloc((size_t)size);
+    if (!buffer) {
+        syslog(LOG_ERR, "GetExePath: allocation failed");
+        return NULL;
+    }
+
+    if (_NSGetExecutablePath(buffer, &size) != 0) {
+        syslog(LOG_ERR, "GetExePath: path retrieval failed");
+        free(buffer);
+        return NULL;
+    }
+
+    char *canonical = realpath(buffer, NULL);
+
+    if (canonical) {
+        free(buffer);
+        return canonical;
+    }
+
+    /*
+     * Keep the original path if canonicalization fails.
+     */
+    return buffer;
+}
+
+static bool has_suffix(const char *string, const char *suffix)
+{
+    if (!string || !suffix) {
+        return false;
+    }
+
+    size_t string_len = strlen(string);
+    size_t suffix_len = strlen(suffix);
+
+    return string_len >= suffix_len &&
+           memcmp(string + string_len - suffix_len,
+                  suffix, suffix_len) == 0;
+}
+
+static void trim_line(char *line)
+{
+    if (!line) {
+        return;
+    }
+
+    line[strcspn(line, "\r\n")] = '\0';
+
+    char *start = line;
+
+    while (*start == ' ' || *start == '\t') {
+        ++start;
+    }
+
+    if (start != line) {
+        memmove(line, start, strlen(start) + 1);
+    }
+
+    size_t len = strlen(line);
+
+    while (len > 0 &&
+           (line[len - 1] == ' ' || line[len - 1] == '\t')) {
+        line[--len] = '\0';
+    }
+}
+
+/*
+ * A rule matches either the complete executable path or its basename.
+ * Blank lines and lines beginning with '#' are ignored.
+ *
+ * getline() avoids matching truncated, overlong rule lines.
+ */
+static bool file_matches_process(
+    const char *rule_path,
+    const char *executable_path)
+{
+    if (!rule_path || !executable_path) {
+        return false;
+    }
+
+    FILE *file = fopen(rule_path, "r");
+
+    if (!file) {
+        syslog(LOG_ERR, "Cannot open rule file %s: %s",
+               rule_path, strerror(errno));
+        return false;
+    }
+
+    const char *basename = strrchr(executable_path, '/');
+    basename = basename ? basename + 1 : executable_path;
+
+    char *line = NULL;
+    size_t capacity = 0;
+    bool matched = false;
+
+    while (getline(&line, &capacity, file) != -1) {
+        trim_line(line);
+
+        if (line[0] == '\0' || line[0] == '#') {
+            continue;
+        }
+
+        if (strcmp(line, executable_path) == 0 ||
+            strcmp(line, basename) == 0) {
+            matched = true;
+            break;
+        }
+    }
+
+    if (ferror(file)) {
+        syslog(LOG_ERR, "Error reading rule file %s", rule_path);
+        matched = false;
+    }
+
+    free(line);
+    fclose(file);
+
+    return matched;
+}
+
+/*
+ * Returns:
+ *
+ *   1: load the tweak
+ *   0: skip the tweak
+ *  -1: rule configuration error; skip the tweak
+ *
+ * Policy:
+ *   1. An existing whitelist takes precedence.
+ *   2. Otherwise, an existing blacklist excludes matching processes.
+ *   3. If neither exists, skip the tweak.
+ */
+static int should_load_tweak(
+    const char *directory,
+    const char *filename,
+    const char *executable_path)
+{
+    char whitelist[PATH_MAX];
+    char blacklist[PATH_MAX];
+
+    int wn = snprintf(
+        whitelist, sizeof(whitelist),
+        "%s/tweaks/%s.whitelist", directory, filename);
+
+    int bn = snprintf(
+        blacklist, sizeof(blacklist),
+        "%s/tweaks/%s.blacklist", directory, filename);
+
+    if (wn < 0 || (size_t)wn >= sizeof(whitelist) ||
+        bn < 0 || (size_t)bn >= sizeof(blacklist)) {
+        syslog(LOG_ERR, "Rule path too long for tweak %s", filename);
+        return -1;
+    }
+
+    struct stat st;
+
+    if (stat(whitelist, &st) == 0) {
+        if (!S_ISREG(st.st_mode)) {
+            syslog(LOG_ERR, "Whitelist is not a regular file: %s",
+                   whitelist);
+            return -1;
+        }
+
+        bool match = file_matches_process(
+            whitelist, executable_path);
+
+        if (!match) {
+            syslog(LOG_INFO, "Skipping %s: not whitelisted for %s",
+                   filename, executable_path);
+        }
+
+        return match ? 1 : 0;
+    }
+
+    if (errno != ENOENT) {
+        syslog(LOG_ERR, "Cannot inspect whitelist %s: %s",
+               whitelist, strerror(errno));
+        return -1;
+    }
+
+    if (stat(blacklist, &st) == 0) {
+        if (!S_ISREG(st.st_mode)) {
+            syslog(LOG_ERR, "Blacklist is not a regular file: %s",
+                   blacklist);
+            return -1;
+        }
+
+        bool match = file_matches_process(
+            blacklist, executable_path);
+
+        if (match) {
+            syslog(LOG_INFO, "Skipping %s: blacklisted for %s",
+                   filename, executable_path);
+        }
+
+        return match ? 0 : 1;
+    }
+
+    if (errno != ENOENT) {
+        syslog(LOG_ERR, "Cannot inspect blacklist %s: %s",
+               blacklist, strerror(errno));
+        return -1;
+    }
+
+    syslog(LOG_INFO, "Skipping %s: no whitelist or blacklist",
+           filename);
+
+    return 0;
+}
+
+/*
+ * Load a tweak and resolve its entry point.
+ *
+ * Handles are intentionally retained. A tweak may have constructors,
+ * registered callbacks, or persistent state that makes unloading unsafe.
+ */
+static void load_tweak(
+    const char *path,
+    const char *filename,
+    void *interceptor)
+{
+    dlerror();
+
+    void *handle = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
+
+    if (!handle) {
+        const char *error = dlerror();
+
+        syslog(LOG_ERR, "Failed to load tweak %s: %s",
+               path, error ? error : "unknown error");
+        return;
+    }
+
+    dlerror();
+
+    LoadFunction_t load =
+        (LoadFunction_t)dlsym(handle, "LoadFunction");
+
+    const char *error = dlerror();
+
+    if (error || !load) {
+        syslog(LOG_ERR, "Tweak %s has no usable LoadFunction: %s",
+               filename, error ? error : "symbol not found");
+        return;
+    }
+
+    syslog(LOG_INFO, "Initializing tweak %s", filename);
+
+    /*
+     * Native crashes and Objective-C exceptions are not caught here.
+     */
+    load(interceptor);
+}
+
+/*
+ * Scan and initialize eligible tweaks.
+ *
+ * The caller must provide a valid Frida interceptor.
+ */
+void Open(void *interceptor)
+{
+    if (!interceptor) {
+        syslog(LOG_ERR, "Open: invalid Frida interceptor");
+        return;
+    }
+
+    /*
+     * Prevent concurrent and repeated scans.
+     * Release the mutex before invoking third-party tweak code.
+     */
+    pthread_mutex_lock(&opener_lock);
+
+    if (opener_running || opener_complete) {
+        pthread_mutex_unlock(&opener_lock);
+        return;
+    }
+
+    opener_running = true;
+    pthread_mutex_unlock(&opener_lock);
+
+    char *executable_path = GetExePath();
+
+    if (!executable_path) {
+        syslog(LOG_ERR, "Open: could not determine executable path");
+        goto done;
+    }
+
+    char tweaks_directory[PATH_MAX];
+
+    int n = snprintf(
+        tweaks_directory, sizeof(tweaks_directory),
+        "%stweaks/", SupportFolderP);
+
+    if (n < 0 || (size_t)n >= sizeof(tweaks_directory)) {
+        syslog(LOG_ERR, "Open: tweaks directory path is too long");
+        free(executable_path);
+        goto done;
+    }
+
+    DIR *directory = opendir(tweaks_directory);
+
+    if (!directory) {
+        syslog(LOG_ERR, "Cannot open tweaks directory %s: %s",
+               tweaks_directory, strerror(errno));
+        free(executable_path);
+        goto done;
+    }
+
+    struct dirent *entry;
+
+    while ((entry = readdir(directory)) != NULL) {
+        const char *filename = entry->d_name;
+
+        if (filename[0] == '.') {
+            continue;
+        }
+
+        if (!has_suffix(filename, ".dylib")) {
+            continue;
+        }
+
+        char path[PATH_MAX];
+
+        n = snprintf(path, sizeof(path), "%s%s",
+                     tweaks_directory, filename);
+
+        if (n < 0 || (size_t)n >= sizeof(path)) {
+            syslog(LOG_ERR, "Skipping oversized tweak path: %s",
+                   filename);
+            continue;
+        }
+
+        struct stat st;
+
+        if (stat(path, &st) != 0) {
+            syslog(LOG_WARNING, "Cannot inspect tweak %s: %s",
+                   path, strerror(errno));
+            continue;
+        }
+
+        if (!S_ISREG(st.st_mode)) {
+            syslog(LOG_WARNING, "Skipping non-regular tweak: %s", path);
+            continue;
+        }
+
+        int decision = should_load_tweak(
+            SupportFolderP, filename, executable_path);
+
+        if (decision != 1) {
+            continue;
+        }
+
+        load_tweak(path, filename, interceptor);
+    }
+
+    if (closedir(directory) != 0) {
+        syslog(LOG_WARNING, "Error closing tweaks directory: %s",
+               strerror(errno));
+    }
+
+    free(executable_path);
+
+done:
+    pthread_mutex_lock(&opener_lock);
+    opener_running = false;
+    opener_complete = true;
+    pthread_mutex_unlock(&opener_lock);
+}
+
+/*
+ * Initialize Frida Gum exactly once.
+ *
+ * Keep the dlopen handle alive for as long as its API is in use.
+ */
+static void initialize_gum(void)
+{
+    static const char *gum_path =
+        "/private/var/ammonia/core/fridagum.dylib";
+
+    void *handle = dlopen(gum_path, RTLD_NOW | RTLD_GLOBAL);
+
+    if (!handle) {
+        const char *error = dlerror();
+
+        syslog(LOG_ERR, "Cannot load Frida Gum: %s",
+               error ? error : "unknown error");
+        return;
+    }
+
+    dlerror();
+
+    GumInitEmbeddedFunc_t init =
+        (GumInitEmbeddedFunc_t)dlsym(handle, "gum_init_embedded");
+
+    const char *init_error = dlerror();
+
+    dlerror();
+
+    GumInterceptorObtainFunc_t obtain =
+        (GumInterceptorObtainFunc_t)dlsym(
+            handle, "gum_interceptor_obtain");
+
+    const char *obtain_error = dlerror();
+
+    if (init_error || obtain_error || !init || !obtain) {
+        syslog(LOG_ERR,
+               "Frida Gum API unavailable (init: %s, obtain: %s)",
+               init_error ? init_error : "ok",
+               obtain_error ? obtain_error : "ok");
+
+        /*
+         * Retain the handle even on partial initialization.
+         */
+        gum_handle = handle;
+        return;
+    }
+
+    init();
+
+    void *interceptor = obtain();
+
+    if (!interceptor) {
+        syslog(LOG_ERR, "Frida Gum returned a null interceptor");
+        gum_handle = handle;
+        return;
+    }
+
+    gum_handle = handle;
+    gum_interceptor = interceptor;
+    gum_init_success = true;
+}
+
+void __attribute__((constructor)) ctor_main(void)
+{
+    pthread_once(&gum_init_once, initialize_gum);
+
+    if (!gum_init_success || !gum_handle || !gum_interceptor) {
+        syslog(LOG_ERR, "Frida Gum initialization failed");
+        return;
+    }
+
+    Open(gum_interceptor);
 }

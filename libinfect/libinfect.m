@@ -9,208 +9,260 @@
 #include "envbuf.h"
 #include "frida-gum.h"
 
-#include <mach-o/fat.h>
-#include <mach-o/loader.h>
-#include <mach-o/nlist.h>
-
-#include <ctype.h>
+#include <MacTypes.h>
 #include <spawn.h>
 #include <stdbool.h>
-#include <stdio.h>
+#include <stdint.h>
 #include <string.h>
-#include <unistd.h>
 
-#include <sys/fcntl.h>
-#include <sys/mman.h>
+
+#include <Foundation/Foundation.h>
+#include <dlfcn.h>
+#include <mach-o/dyld.h>
 #include <sys/stat.h>
+#include <sys/sysctl.h>
 
-void LogToFile(const char *format, ...) {
-  // Open the file in append mode
-  FILE *file = fopen("/tmp/infect.log", "a");
+#define PRIO_DARWIN_ROLE_UI_FOCAL     0x1
+#define PRIO_DARWIN_ROLE_UI           0x2
+#define PRIO_DARWIN_ROLE_UI_NON_FOCAL 0x4
 
-  if (file == NULL) {
-    // Failed to open the file
-    perror("Error opening file");
-    return;
-  }
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include <CoreFoundation/CoreFoundation.h>
 
-  // Initialize variable arguments
-  va_list args;
-  va_start(args, format);
+Boolean killall(const char *executablePathToKill, bool softly) {
+    if (!executablePathToKill)
+        return false;
 
-  // Use vfprintf to write to the file
-  vfprintf(file, format, args);
-
-  // Clean up variable arguments
-  va_end(args);
-
-  // Close the file
-  fclose(file);
-}
-
-int (*SpawnOld)(pid_t *pid, const char *path,
-                const posix_spawn_file_actions_t *ac,
-                const posix_spawnattr_t *ab, char *const __argv[],
-                char *const __envp[]);
-
-bool PathDriver(const char *path) { return (strstr(path, "Driver") != NULL); }
-
-int posix_spawnattr_get_darwin_role_np(const posix_spawnattr_t *__restrict attr,
-                                       uint64_t *__restrict darwin_rolep);
-#define PRIO_DARWIN_ROLE_UI_FOCAL 0x1     /* On  screen,     focal UI */
-#define PRIO_DARWIN_ROLE_UI 0x2           /* On  screen UI,  focal unknown */
-#define PRIO_DARWIN_ROLE_UI_NON_FOCAL 0x4 /* On  screen, non-focal UI */
-
-/* --- ammonia.blacklist storage --- */
-static char **ammonia_blacklist = NULL;
-static size_t ammonia_blacklist_count = 0;
-
-/* load ammonia.blacklist (substring-match style like opener.c) */
-static void load_ammonia_blacklist(void) {
-  char pathbuf[PATH_MAX];
-  if (snprintf(pathbuf, sizeof(pathbuf), "%s%s", SupportFolderP,
-               "ammonia.blacklist") >= (int)sizeof(pathbuf)) {
-    LogToFile("ammonia: blacklist path overflow\n");
-    return;
-  }
-
-  FILE *f = fopen(pathbuf, "r");
-  if (!f) {
-    // blacklist optional; silently continue
-    return;
-  }
-
-  char *line = NULL;
-  size_t len = 0;
-  ssize_t read;
-
-  while ((read = getline(&line, &len, f)) != -1) {
-    // strip newline(s)
-    while (read > 0 && (line[read - 1] == '\n' || line[read - 1] == '\r')) {
-      line[--read] = '\0';
-    }
-
-    // skip leading whitespace
-    char *start = line;
-    while (*start && isspace((unsigned char)*start))
-      start++;
-
-    // skip comments and empty lines
-    if (*start == '#' || *start == '\0')
-      continue;
-
-    // trim trailing whitespace
-    char *end = start + strlen(start) - 1;
-    while (end > start && isspace((unsigned char)*end))
-      *end-- = '\0';
-
-    // duplicate and store
-    char *entry = strdup(start);
-    if (!entry)
-      continue;
-
-    char **tmp = realloc(ammonia_blacklist,
-                         (ammonia_blacklist_count + 1) * sizeof(char *));
-    if (!tmp) {
-      free(entry);
-      continue;
-    }
-    ammonia_blacklist = tmp;
-    ammonia_blacklist[ammonia_blacklist_count++] = entry;
-  }
-
-  free(line);
-  fclose(f);
-}
-
-/* returns true if `path` should be considered blacklisted (substring matching)
- */
-static bool is_path_blacklisted(const char *path) {
-  if (!path || ammonia_blacklist_count == 0)
-    return false;
-  for (size_t i = 0; i < ammonia_blacklist_count; ++i) {
-    const char *entry = ammonia_blacklist[i];
-    if (!entry || entry[0] == '\0')
-      continue;
-    if (strstr(path, entry) != NULL) {
-      return true;
-    }
-  }
-  return false;
-}
-
-int SpawnNew(pid_t *pid, const char *path, const posix_spawn_file_actions_t *ac,
-             const posix_spawnattr_t *ab, char *const __argv[],
-             char *const __envp[]) {
-  char **playground = envbuf_mutcopy((const char **)__envp);
-
-  uint64_t darwin_rolep = 0;
-  posix_spawnattr_get_darwin_role_np(ab, &darwin_rolep);
-
-  if (strcmp(path, "/System/Library/CoreServices/loginwindow.app/Contents/"
-                   "MacOS/loginwindow") == 0) {
-    goto SkipGuiCheck;
-  }
-  if (strcmp(path, "/usr/libexec/xpcproxy") == 0) {
-    envbuf_setenv(&playground, "DYLD_INSERT_LIBRARIES",
-                  SupportFolderP "liblibinfect.dylib");
-  } else if (!PathDriver(path)) {
-    if (darwin_rolep == PRIO_DARWIN_ROLE_UI_FOCAL ||
-        darwin_rolep == PRIO_DARWIN_ROLE_UI ||
-        darwin_rolep == PRIO_DARWIN_ROLE_UI_NON_FOCAL) {
-
-      if (!is_path_blacklisted(path)) {
-
-      SkipGuiCheck:
-        // skip adding opener for this path
-        LogToFile("ammonia: skipping opener for blacklisted path '%s'\n", path);
-        // we are GUI
-
-        char *newlib = SupportFolderP "libopener.dylib";
-
-        int idx =
-            envbuf_find((const char **)playground, "DYLD_INSERT_LIBRARIES");
-        if (idx >= 0) {
-          const char *old = playground[idx] + strlen("DYLD_INSERT_LIBRARIES=");
-          char *combined = NULL;
-          if (asprintf(&combined, "%s:%s", old, newlib) != -1) {
-            envbuf_setenv(&playground, "DYLD_INSERT_LIBRARIES", combined);
-            free(combined);
-          }
-        } else {
-          envbuf_setenv(&playground, "DYLD_INSERT_LIBRARIES", newlib);
+    static int maxArgumentSize = 0;
+    if (maxArgumentSize == 0) {
+        int argmaxMib[2] = { CTL_KERN, KERN_ARGMAX };
+        size_t size = sizeof(maxArgumentSize);
+        if (sysctl(argmaxMib, 2, &maxArgumentSize, &size, NULL, 0) == -1) {
+            perror("sysctl argument size");
+            maxArgumentSize = 4096;  // Default
         }
-      }
-
-      int k = SpawnOld(pid, path, ac, ab, __argv, (char *const *)playground);
-      return k;
     }
-  }
 
-  int k = SpawnOld(pid, path, ac, ab, __argv, (char *const *)playground);
-  return k;
+    int mib[3] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL };
+    size_t length = 0;
+
+    if (sysctl(mib, 3, NULL, &length, NULL, 0) < 0)
+        return false;
+
+    // Pad: processes can spawn between the two sysctl calls
+    length += length / 8 + sizeof(struct kinfo_proc) * 16;
+
+    struct kinfo_proc *info = malloc(length);
+    if (!info)
+        return false;
+
+    if (sysctl(mib, 3, info, &length, NULL, 0) < 0) {
+        free(info);
+        return false;
+    }
+
+    // One buffer, reused for every process (+1 so we can always NUL-terminate)
+    char *buffer = malloc((size_t)maxArgumentSize + 1);
+    if (!buffer) {
+        free(info);
+        return false;
+    }
+
+    bool signaled = false;
+    int count = (int)(length / sizeof(struct kinfo_proc));
+    int signalToSend = softly ? SIGTERM : SIGKILL;
+    pid_t myPid = getpid();
+
+    for (int i = 0; i < count; i++) {
+        pid_t pid = info[i].kp_proc.p_pid;
+        if (pid <= 0 || pid == myPid)
+            continue;
+
+        int procMib[3] = { CTL_KERN, KERN_PROCARGS2, pid };
+        size_t size = (size_t)maxArgumentSize;
+
+        if (sysctl(procMib, 3, buffer, &size, NULL, 0) != 0)
+            continue;
+        if (size <= sizeof(int))
+            continue;
+
+        buffer[size] = '\0';  // guarantee termination
+
+        // Layout: [int argc][exec_path\0][padding\0...][argv...]
+        const char *executablePath = buffer + sizeof(int);
+        if (strcmp(executablePath, executablePathToKill) == 0) {
+            if (kill(pid, signalToSend) == 0)
+                signaled = true;
+        }
+    }
+
+    free(buffer);
+    free(info);
+    return signaled;
 }
 
-int SpawnPNew(pid_t *restrict pid, const char *restrict path,
-              const posix_spawn_file_actions_t *ac,
-              const posix_spawnattr_t *restrict ab, char *const *restrict argv,
-              char *const *restrict envp) {
-  return SpawnNew(pid, path, ac, ab, argv, envp);
+#define WindowServerP "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
+
+Boolean WindowServerSetForLoadingAfterBoot = false;
+Boolean ApplyWindowServerFix(void) {
+    if (!WindowServerSetForLoadingAfterBoot) {
+        Boolean killed = killall(
+            WindowServerP,
+            false);
+        WindowServerSetForLoadingAfterBoot = killed;
+        return killed;
+    }
+    return true;
 }
 
-void __attribute__((constructor)) Infect(void) {
-  load_ammonia_blacklist();
+static int (*SpawnOld)(
+    pid_t *, const char *,
+    const posix_spawn_file_actions_t *,
+    const posix_spawnattr_t *,
+    char *const [], char *const []
+);
 
-  gum_init_embedded();
-  GumInterceptor *interceptor = gum_interceptor_obtain();
-  gum_interceptor_begin_transaction(interceptor);
-  gum_interceptor_replace(
-      interceptor,
-      (gpointer)gum_module_find_export_by_name(NULL, "posix_spawn"),
-      (gpointer)SpawnNew, NULL, (gpointer *)&SpawnOld);
-  gum_interceptor_replace(
-      interceptor,
-      (gpointer)gum_module_find_export_by_name(NULL, "posix_spawnp"),
-      (gpointer)SpawnPNew, NULL, (gpointer *)(NULL));
-  gum_interceptor_end_transaction(interceptor);
+static int (*SpawnPOld)(
+    pid_t *, const char *,
+    const posix_spawn_file_actions_t *,
+    const posix_spawnattr_t *,
+    char *const [], char *const []
+);
+
+static bool IsGUIRole(uint64_t role)
+{
+    return role == PRIO_DARWIN_ROLE_UI_FOCAL ||
+           role == PRIO_DARWIN_ROLE_UI ||
+           role == PRIO_DARWIN_ROLE_UI_NON_FOCAL;
+}
+
+int posix_spawnattr_get_darwin_role_np(const posix_spawnattr_t * __restrict, uint64_t * __restrict) __API_AVAILABLE(macos(10.11), ios(9.0));
+
+static int SpawnWrapper(
+    pid_t *pid,
+    const char *path,
+    const posix_spawn_file_actions_t *actions,
+    const posix_spawnattr_t *attr,
+    char *const argv[],
+    char *const envp[],
+    bool spawnp)
+{
+    if (getpid() == 1) ApplyWindowServerFix();
+
+    char **env = envbuf_mutcopy((const char **)envp);
+
+    if (!env) {
+        return spawnp
+            ? SpawnPOld(pid, path, actions, attr, argv, envp)
+            : SpawnOld(pid, path, actions, attr, argv, envp);
+    }
+
+    uint64_t role = 0;
+    if (attr) {
+        posix_spawnattr_get_darwin_role_np(attr, &role);
+    }
+
+    if (path && strcmp(path, WindowServerP) == 0) {
+        goto GraphicalProcess;
+    }
+
+    if (path && strcmp(path, "/usr/libexec/xpcproxy") == 0) {
+        envbuf_setenv(&env, "DYLD_INSERT_LIBRARIES",
+                      SupportFolderP "liblibinfect.dylib");
+    } else if (path &&
+               (strstr(path, "Driver") == NULL) &&
+               IsGUIRole(role)) {
+
+GraphicalProcess:
+        const char *library = SupportFolderP "libopener.dylib";
+        int index = envbuf_find((const char **)env,
+                                "DYLD_INSERT_LIBRARIES");
+
+        if (index >= 0) {
+            const char *existing =
+                env[index] + strlen("DYLD_INSERT_LIBRARIES=");
+
+            char *combined = NULL;
+
+            if (asprintf(&combined, "%s:%s", existing, library) >= 0) {
+                envbuf_setenv(&env, "DYLD_INSERT_LIBRARIES", combined);
+                free(combined);
+            }
+        } else {
+            envbuf_setenv(&env, "DYLD_INSERT_LIBRARIES", library);
+        }
+    }
+
+    int result = spawnp
+        ? SpawnPOld(pid, path, actions, attr, argv, env)
+        : SpawnOld(pid, path, actions, attr, argv, env);
+
+    envbuf_free(env);
+    return result;
+}
+
+static int SpawnNew(
+    pid_t *restrict pid,
+    const char *restrict path,
+    const posix_spawn_file_actions_t *actions,
+    const posix_spawnattr_t *restrict attr,
+    char *const argv[],
+    char *const envp[])
+{
+    return SpawnWrapper(pid,
+                        path,
+                        actions,
+                        attr,
+                        (char *const *)argv,
+                        (char *const *)envp,
+                        false);
+}
+
+static int SpawnPNew(
+    pid_t *restrict pid,
+    const char *restrict path,
+    const posix_spawn_file_actions_t *actions,
+    const posix_spawnattr_t *restrict attr,
+    char *const argv[],
+    char *const envp[])
+{
+    return SpawnWrapper(pid,
+                        path,
+                        actions,
+                        attr,
+                        (char *const *)argv,
+                        (char *const *)envp,
+                        true);
+}
+
+void __attribute__((constructor)) Infect(void)
+{
+    gum_init_embedded();
+
+    GumInterceptor *interceptor = gum_interceptor_obtain();
+
+    gum_interceptor_begin_transaction(interceptor);
+
+    gum_interceptor_replace(
+        interceptor,
+        (gpointer)gum_module_find_export_by_name(NULL, "posix_spawn"),
+        (gpointer)SpawnNew,
+        NULL,
+        (gpointer *)&SpawnOld);
+
+    gum_interceptor_replace(
+        interceptor,
+        (gpointer)gum_module_find_export_by_name(NULL, "posix_spawnp"),
+        (gpointer)SpawnPNew,
+        NULL,
+        (gpointer *)&SpawnPOld);
+
+    gum_interceptor_end_transaction(interceptor);
 }
