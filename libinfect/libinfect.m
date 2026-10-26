@@ -140,6 +140,7 @@ static bool IsGUIRole(uint64_t role)
 {
     return role == PRIO_DARWIN_ROLE_UI_FOCAL ||
            role == PRIO_DARWIN_ROLE_UI ||
+           role == 3 ||
            role == PRIO_DARWIN_ROLE_UI_NON_FOCAL;
 }
 
