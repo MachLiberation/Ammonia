@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <mach-o/dyld.h>
+#include <mach/message.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -25,6 +26,9 @@
 typedef void (*LoadFunction_t)(void *);
 typedef void (*GumInitEmbeddedFunc_t)(void);
 typedef void *(*GumInterceptorObtainFunc_t)(void);
+
+typedef bool (*GumInterceptorReplaceIMP)(void *, void *, void *, void *, void **);
+typedef void (*GumInterceptorTransactionIMP)(void *);
 
 static pthread_mutex_t opener_lock = PTHREAD_MUTEX_INITIALIZER;
 static bool opener_running = false;
@@ -425,6 +429,10 @@ done:
  *
  * Keep the dlopen handle alive for as long as its API is in use.
  */
+GumInterceptorReplaceIMP replace = NULL;;
+GumInterceptorTransactionIMP begin = NULL;;
+GumInterceptorTransactionIMP end = NULL;
+
 static void initialize_gum(void)
 {
     static const char *gum_path =
@@ -478,9 +486,38 @@ static void initialize_gum(void)
         return;
     }
 
+    replace = (GumInterceptorReplaceIMP)dlsym(RTLD_DEFAULT, "gum_interceptor_replace");
+    begin = (GumInterceptorTransactionIMP)dlsym(RTLD_DEFAULT, "gum_interceptor_begin_transaction");
+    end = (GumInterceptorTransactionIMP)dlsym(RTLD_DEFAULT, "gum_interceptor_end_transaction");
+    if (replace == NULL || begin == NULL || end == NULL) {
+        syslog(LOG_ERR, "Frida Gum returned a interceptor apis");
+        return;
+    }
+
     gum_handle = handle;
     gum_interceptor = interceptor;
     gum_init_success = true;
+}
+
+extern int sandbox_init_with_parameters(const char *profile, uint64_t flags, const char **params, char **errorbuf);
+static int (*SandboxInitWithParameters)(const char *profile, uint64_t flags, const char **params, char **errorbuf);
+int sandbox_init_with_parameters_new(const char *profile, uint64_t flags, const char **params, char **errorbuf) {
+    char path[PATH_MAX];
+    uint32_t size = sizeof(path);
+
+    if (_NSGetExecutablePath(path, &size) == 0) {
+        const char *name = strrchr(path, '/');
+        name = name ? name + 1 : path;
+
+        if (strcmp(name, "WindowServer") == 0) {
+            return 0;
+        }
+    }
+
+    return SandboxInitWithParameters(profile,
+                                     flags,
+                                     params,
+                                     errorbuf);
 }
 
 void __attribute__((constructor)) ctor_main(void)
@@ -493,4 +530,46 @@ void __attribute__((constructor)) ctor_main(void)
     }
 
     Open(gum_interceptor);
+
+    void * targ = sandbox_init_with_parameters;
+    if (targ == NULL) {
+        return;
+    }
+
+    begin(gum_interceptor);
+    replace(gum_interceptor,
+            targ,
+            sandbox_init_with_parameters_new,
+            NULL,
+            &SandboxInitWithParameters);
+
+    end(gum_interceptor);
 }
+
+void _libsecinit_initializer(void);
+void overriden__libsecinit_initializer(void) {
+    char path[PATH_MAX];
+    uint32_t size = sizeof(path);
+
+    if (_NSGetExecutablePath(path, &size) == 0) {
+        const char *name = strrchr(path, '/');
+        name = name ? name + 1 : path;
+
+        if (strcmp(name, "WindowServer") == 0) {
+            return;
+        }
+    }
+
+    _libsecinit_initializer();
+}
+
+__attribute__((used, section("__DATA,__interpose")))
+static struct {
+    void *replacement;
+    void *replacee;
+} interpose_entries[] = {
+    {
+        (void *)overriden__libsecinit_initializer,
+        (void *)_libsecinit_initializer
+    }
+};
