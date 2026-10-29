@@ -1,43 +1,37 @@
+# Xcode
 .DS_Store
-.AppleDouble
-.LSOverride
-
-Icon
-._*
-.cache
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-ammonia.pkg
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
-
-Build/
-DerivedData
-ResourcesTarball
-
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-xcuserdata
-
-*.xccheckout
+DerivedData/
+*.xcodeproj/*.pbxuser
+*.xcodeproj/*.mode1v3
+*.xcodeproj/*.mode2v3
+*.xcodeproj/*.perspectivev3
+*.xcodeproj/xcuserdata/*
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcuserdata/*.xcuserdatad
+*.xcworkspace/xcuserdata/*.xcuserdatad/
+*.xcscmbindings
+*.xcuserdata
 *.moved-aside
+xcuserdata/
+*.xcuserdatad
 *.xcuserstate
+Build/
+build/
+**/*.pbxitems
+!default.pbxitems
+!project.pbxproj
 
-*.dylib
-libfrida*
-libmini*
-ammonia/.DS_Store
-extravagant/.DS_Store
+# Swift Package Manager
+.swiftpm/
+Package.resolved
+# Cocoapods
+Pods/
+
+# Carthage
+Carthage/
+SkyLightServer.h
+# Reference material from Vanish (not part of the framework)
+Dissolve.metal
+Common.metal
+WaterSim.h
+Vanish.c

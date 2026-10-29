@@ -1,0 +1,354 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 110;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		18AD1E9830940AC400276AB4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E8730940AC400276AB4 /* main.m */; };
+		18AD1E9930940AC400276AB4 /* libinfect.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E8E30940AC400276AB4 /* libinfect.m */; };
+		18AD1E9A30940AC400276AB4 /* envbuf.c in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E8C30940AC400276AB4 /* envbuf.c */; };
+		18AD1E9B30940AC400276AB4 /* opener.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E9230940AC400276AB4 /* opener.m */; };
+		18AD1E9C30940AC400276AB4 /* main.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E8630940AC400276AB4 /* main.h */; };
+		18AD1E9D30940AC400276AB4 /* ammonia.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E8530940AC400276AB4 /* ammonia.h */; };
+		18AD1E9E30940AC400276AB4 /* opener.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E9130940AC400276AB4 /* opener.h */; };
+		18AD1E9F30940AC400276AB4 /* envbuf.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E8B30940AC400276AB4 /* envbuf.h */; };
+		18AD1EA030940AC400276AB4 /* frida-gum.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E8D30940AC400276AB4 /* frida-gum.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		18AD1E7E30940A9100276AB4 /* libammonia_am.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libammonia_am.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		18AD1E8530940AC400276AB4 /* ammonia.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ammonia.h; sourceTree = "<group>"; };
+		18AD1E8630940AC400276AB4 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
+		18AD1E8730940AC400276AB4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		18AD1E8930940AC400276AB4 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
+		18AD1E8A30940AC400276AB4 /* compile.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = compile.sh; sourceTree = "<group>"; };
+		18AD1E8B30940AC400276AB4 /* envbuf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = envbuf.h; sourceTree = "<group>"; };
+		18AD1E8C30940AC400276AB4 /* envbuf.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = envbuf.c; sourceTree = "<group>"; };
+		18AD1E8D30940AC400276AB4 /* frida-gum.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "frida-gum.h"; sourceTree = "<group>"; };
+		18AD1E8E30940AC400276AB4 /* libinfect.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = libinfect.m; sourceTree = "<group>"; };
+		18AD1E9030940AC400276AB4 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		18AD1E9130940AC400276AB4 /* opener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = opener.h; sourceTree = "<group>"; };
+		18AD1E9230940AC400276AB4 /* opener.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = opener.m; sourceTree = "<group>"; };
+		18AD1E9430940AC400276AB4 /* package.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = package.sh; sourceTree = "<group>"; };
+		18AD1E9530940AC400276AB4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		18AD1E9630940AC400276AB4 /* setup_frida.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = setup_frida.sh; sourceTree = "<group>"; };
+		18AD1E9730940AC400276AB4 /* uninstaller.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = uninstaller.sh; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		18AD1E7C30940A9100276AB4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		18AD1E7530940A9100276AB4 = {
+			isa = PBXGroup;
+			children = (
+				18AD1E8530940AC400276AB4 /* ammonia.h */,
+				18AD1E8830940AC400276AB4 /* ammonia */,
+				18AD1E8930940AC400276AB4 /* CMakeLists.txt */,
+				18AD1E8A30940AC400276AB4 /* compile.sh */,
+				18AD1E8F30940AC400276AB4 /* libinfect */,
+				18AD1E9030940AC400276AB4 /* LICENSE */,
+				18AD1E9330940AC400276AB4 /* opener */,
+				18AD1E9430940AC400276AB4 /* package.sh */,
+				18AD1E9530940AC400276AB4 /* README.md */,
+				18AD1E9630940AC400276AB4 /* setup_frida.sh */,
+				18AD1E9730940AC400276AB4 /* uninstaller.sh */,
+				18AD1E7F30940A9100276AB4 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		18AD1E7F30940A9100276AB4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				18AD1E7E30940A9100276AB4 /* libammonia_am.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		18AD1E8830940AC400276AB4 /* ammonia */ = {
+			isa = PBXGroup;
+			children = (
+				18AD1E8630940AC400276AB4 /* main.h */,
+				18AD1E8730940AC400276AB4 /* main.m */,
+			);
+			path = ammonia;
+			sourceTree = "<group>";
+		};
+		18AD1E8F30940AC400276AB4 /* libinfect */ = {
+			isa = PBXGroup;
+			children = (
+				18AD1E8B30940AC400276AB4 /* envbuf.h */,
+				18AD1E8C30940AC400276AB4 /* envbuf.c */,
+				18AD1E8D30940AC400276AB4 /* frida-gum.h */,
+				18AD1E8E30940AC400276AB4 /* libinfect.m */,
+			);
+			path = libinfect;
+			sourceTree = "<group>";
+		};
+		18AD1E9330940AC400276AB4 /* opener */ = {
+			isa = PBXGroup;
+			children = (
+				18AD1E9130940AC400276AB4 /* opener.h */,
+				18AD1E9230940AC400276AB4 /* opener.m */,
+			);
+			path = opener;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		18AD1E7A30940A9100276AB4 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			files = (
+				18AD1E9C30940AC400276AB4 /* main.h in Headers */,
+				18AD1E9D30940AC400276AB4 /* ammonia.h in Headers */,
+				18AD1E9E30940AC400276AB4 /* opener.h in Headers */,
+				18AD1E9F30940AC400276AB4 /* envbuf.h in Headers */,
+				18AD1EA030940AC400276AB4 /* frida-gum.h in Headers */,
+			);
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		18AD1E7D30940A9100276AB4 /* ammonia_am */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 18AD1E8230940A9100276AB4 /* Build configuration list for PBXNativeTarget "ammonia_am" */;
+			buildPhases = (
+				18AD1E7A30940A9100276AB4 /* Headers */,
+				18AD1E7B30940A9100276AB4 /* Sources */,
+				18AD1E7C30940A9100276AB4 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			name = ammonia_am;
+			productName = ammonia_am;
+			productReference = 18AD1E7E30940A9100276AB4 /* libammonia_am.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		18AD1E7630940A9100276AB4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 2710;
+				TargetAttributes = {
+					18AD1E7D30940A9100276AB4 = {
+						CreatedOnToolsVersion = 27.1;
+					};
+				};
+			};
+			buildConfigurationList = 18AD1E7930940A9100276AB4 /* Build configuration list for PBXProject "ammonia" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 18AD1E7530940A9100276AB4;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 18AD1E7F30940A9100276AB4 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				18AD1E7D30940A9100276AB4 /* ammonia_am */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		18AD1E7B30940A9100276AB4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				18AD1E9830940AC400276AB4 /* main.m in Sources */,
+				18AD1E9930940AC400276AB4 /* libinfect.m in Sources */,
+				18AD1E9A30940AC400276AB4 /* envbuf.c in Sources */,
+				18AD1E9B30940AC400276AB4 /* opener.m in Sources */,
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		18AD1E8030940A9100276AB4 /* Debug configuration for PBXProject "ammonia" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					arm64e,
+					x86_64,
+				);
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		18AD1E8130940A9100276AB4 /* Release configuration for PBXProject "ammonia" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					arm64e,
+					x86_64,
+				);
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		18AD1E8330940A9100276AB4 /* Debug configuration for PBXNativeTarget "ammonia_am" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		18AD1E8430940A9100276AB4 /* Release configuration for PBXNativeTarget "ammonia_am" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		18AD1E7930940A9100276AB4 /* Build configuration list for PBXProject "ammonia" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				18AD1E8030940A9100276AB4 /* Debug configuration for PBXProject "ammonia" */,
+				18AD1E8130940A9100276AB4 /* Release configuration for PBXProject "ammonia" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		18AD1E8230940A9100276AB4 /* Build configuration list for PBXNativeTarget "ammonia_am" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				18AD1E8330940A9100276AB4 /* Debug configuration for PBXNativeTarget "ammonia_am" */,
+				18AD1E8430940A9100276AB4 /* Release configuration for PBXNativeTarget "ammonia_am" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 18AD1E7630940A9100276AB4 /* Project object */;
+	validationLevel = 1;
+}

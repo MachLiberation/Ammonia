@@ -541,7 +541,7 @@ void __attribute__((constructor)) ctor_main(void)
             targ,
             sandbox_init_with_parameters_new,
             NULL,
-            &SandboxInitWithParameters);
+            (void **)&SandboxInitWithParameters);
 
     end(gum_interceptor);
 }
