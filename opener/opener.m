@@ -83,6 +83,12 @@ char *GetExePath(void)
     return buffer;
 }
 
+static bool is_process(const char *name)
+{
+    const char *prog = getprogname();   // basename of argv[0], no syscall, no allocation
+    return prog && strcmp(prog, name) == 0;
+}
+
 static bool has_suffix(const char *string, const char *suffix)
 {
     if (!string || !suffix) {
@@ -412,6 +418,13 @@ int sandbox_init_with_parameters_new(const char *profile, uint64_t flags, const 
 
 void __attribute__((constructor)) ctor_main(void)
 {
+    const bool is_webcontent   = is_process("com.apple.WebKit.WebContent");
+    const bool is_windowserver = is_process("WindowServer");
+
+    if (is_webcontent) {
+        return;                      // no Gum, no tweaks
+    }
+
     pthread_once(&gum_init_once, initialize_gum);
 
     if (!gum_init_success || !gum_handle || !gum_interceptor) {
@@ -421,18 +434,16 @@ void __attribute__((constructor)) ctor_main(void)
 
     Open(gum_interceptor);
 
-    void *targ = sandbox_init_with_parameters;
-    if (targ == NULL) {
-        return;
+    if (!is_windowserver) {
+        return;                      // only WindowServer needs the sandbox hook
     }
 
     begin(gum_interceptor);
     replace(gum_interceptor,
-            targ,
+            (void *)sandbox_init_with_parameters,
             sandbox_init_with_parameters_new,
             NULL,
             (void **)&SandboxInitWithParameters);
-
     end(gum_interceptor);
 }
 
