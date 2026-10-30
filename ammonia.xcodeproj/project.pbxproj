@@ -7,22 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		18AD1E9830940AC400276AB4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E8730940AC400276AB4 /* main.m */; };
-		18AD1E9930940AC400276AB4 /* libinfect.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E8E30940AC400276AB4 /* libinfect.m */; };
-		18AD1E9A30940AC400276AB4 /* envbuf.c in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E8C30940AC400276AB4 /* envbuf.c */; };
-		18AD1E9B30940AC400276AB4 /* opener.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E9230940AC400276AB4 /* opener.m */; };
-		18AD1E9C30940AC400276AB4 /* main.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E8630940AC400276AB4 /* main.h */; };
-		18AD1E9D30940AC400276AB4 /* ammonia.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E8530940AC400276AB4 /* ammonia.h */; };
-		18AD1E9E30940AC400276AB4 /* opener.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E9130940AC400276AB4 /* opener.h */; };
-		18AD1E9F30940AC400276AB4 /* envbuf.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E8B30940AC400276AB4 /* envbuf.h */; };
-		18AD1EA030940AC400276AB4 /* frida-gum.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E8D30940AC400276AB4 /* frida-gum.h */; };
+		18AD1EBD309417E800276AB4 /* opener.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E9230940AC400276AB4 /* opener.m */; };
+		18AD1EBE309417E800276AB4 /* opener.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E9130940AC400276AB4 /* opener.h */; };
+		18AD1EC73094180000276AB4 /* envbuf.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E8B30940AC400276AB4 /* envbuf.h */; };
+		18AD1EC83094180000276AB4 /* frida-gum.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E8D30940AC400276AB4 /* frida-gum.h */; };
+		18AD1EC93094180000276AB4 /* libinfect.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E8E30940AC400276AB4 /* libinfect.m */; };
+		18AD1ECA3094180000276AB4 /* envbuf.c in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E8C30940AC400276AB4 /* envbuf.c */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		18AD1EA9309416AD00276AB4 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolder = None;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		18AD1E7E30940A9100276AB4 /* libammonia_am.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libammonia_am.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		18AD1E8530940AC400276AB4 /* ammonia.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ammonia.h; sourceTree = "<group>"; };
-		18AD1E8630940AC400276AB4 /* main.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
-		18AD1E8730940AC400276AB4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		18AD1E8930940AC400276AB4 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		18AD1E8A30940AC400276AB4 /* compile.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = compile.sh; sourceTree = "<group>"; };
 		18AD1E8B30940AC400276AB4 /* envbuf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = envbuf.h; sourceTree = "<group>"; };
@@ -36,10 +41,33 @@
 		18AD1E9530940AC400276AB4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		18AD1E9630940AC400276AB4 /* setup_frida.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = setup_frida.sh; sourceTree = "<group>"; };
 		18AD1E9730940AC400276AB4 /* uninstaller.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = uninstaller.sh; sourceTree = "<group>"; };
+		18AD1EA130940F5900276AB4 /* frida-gum.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "frida-gum.h"; sourceTree = "<group>"; };
+		18AD1EA330940F5900276AB4 /* libfrida-gum.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libfrida-gum.a"; sourceTree = "<group>"; };
+		18AD1EAB309416AD00276AB4 /* ammonia */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ammonia; sourceTree = BUILT_PRODUCTS_DIR; };
+		18AD1EB9309417DF00276AB4 /* libopener.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libopener.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		18AD1EC3309417FA00276AB4 /* liblibinfect.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liblibinfect.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		18AD1EAC309416AD00276AB4 /* ammonia */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ammonia;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
-		18AD1E7C30940A9100276AB4 /* Frameworks */ = {
+		18AD1EA8309416AD00276AB4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		18AD1EB7309417DF00276AB4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		18AD1EC1309417FA00276AB4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
 			);
@@ -51,7 +79,6 @@
 			isa = PBXGroup;
 			children = (
 				18AD1E8530940AC400276AB4 /* ammonia.h */,
-				18AD1E8830940AC400276AB4 /* ammonia */,
 				18AD1E8930940AC400276AB4 /* CMakeLists.txt */,
 				18AD1E8A30940AC400276AB4 /* compile.sh */,
 				18AD1E8F30940AC400276AB4 /* libinfect */,
@@ -61,6 +88,9 @@
 				18AD1E9530940AC400276AB4 /* README.md */,
 				18AD1E9630940AC400276AB4 /* setup_frida.sh */,
 				18AD1E9730940AC400276AB4 /* uninstaller.sh */,
+				18AD1EA130940F5900276AB4 /* frida-gum.h */,
+				18AD1EA330940F5900276AB4 /* libfrida-gum.a */,
+				18AD1EAC309416AD00276AB4 /* ammonia */,
 				18AD1E7F30940A9100276AB4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -68,18 +98,11 @@
 		18AD1E7F30940A9100276AB4 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				18AD1E7E30940A9100276AB4 /* libammonia_am.dylib */,
+				18AD1EAB309416AD00276AB4 /* ammonia */,
+				18AD1EB9309417DF00276AB4 /* libopener.dylib */,
+				18AD1EC3309417FA00276AB4 /* liblibinfect.dylib */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		18AD1E8830940AC400276AB4 /* ammonia */ = {
-			isa = PBXGroup;
-			children = (
-				18AD1E8630940AC400276AB4 /* main.h */,
-				18AD1E8730940AC400276AB4 /* main.m */,
-			);
-			path = ammonia;
 			sourceTree = "<group>";
 		};
 		18AD1E8F30940AC400276AB4 /* libinfect */ = {
@@ -105,32 +128,68 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		18AD1E7A30940A9100276AB4 /* Headers */ = {
+		18AD1EB5309417DF00276AB4 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			files = (
-				18AD1E9C30940AC400276AB4 /* main.h in Headers */,
-				18AD1E9D30940AC400276AB4 /* ammonia.h in Headers */,
-				18AD1E9E30940AC400276AB4 /* opener.h in Headers */,
-				18AD1E9F30940AC400276AB4 /* envbuf.h in Headers */,
-				18AD1EA030940AC400276AB4 /* frida-gum.h in Headers */,
+				18AD1EBE309417E800276AB4 /* opener.h in Headers */,
+			);
+		};
+		18AD1EBF309417FA00276AB4 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			files = (
+				18AD1EC73094180000276AB4 /* envbuf.h in Headers */,
+				18AD1EC83094180000276AB4 /* frida-gum.h in Headers */,
 			);
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		18AD1E7D30940A9100276AB4 /* ammonia_am */ = {
+		18AD1EAA309416AD00276AB4 /* ammonia */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 18AD1E8230940A9100276AB4 /* Build configuration list for PBXNativeTarget "ammonia_am" */;
+			buildConfigurationList = 18AD1EAF309416AD00276AB4 /* Build configuration list for PBXNativeTarget "ammonia" */;
 			buildPhases = (
-				18AD1E7A30940A9100276AB4 /* Headers */,
-				18AD1E7B30940A9100276AB4 /* Sources */,
-				18AD1E7C30940A9100276AB4 /* Frameworks */,
+				18AD1EA7309416AD00276AB4 /* Sources */,
+				18AD1EA8309416AD00276AB4 /* Frameworks */,
+				18AD1EA9309416AD00276AB4 /* CopyFiles */,
 			);
 			buildRules = (
 			);
-			name = ammonia_am;
-			productName = ammonia_am;
-			productReference = 18AD1E7E30940A9100276AB4 /* libammonia_am.dylib */;
+			fileSystemSynchronizedGroups = (
+				18AD1EAC309416AD00276AB4 /* ammonia */,
+			);
+			name = ammonia;
+			productName = ammonia;
+			productReference = 18AD1EAB309416AD00276AB4 /* ammonia */;
+			productType = "com.apple.product-type.tool";
+		};
+		18AD1EB8309417DF00276AB4 /* opener */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 18AD1EBA309417DF00276AB4 /* Build configuration list for PBXNativeTarget "opener" */;
+			buildPhases = (
+				18AD1EB5309417DF00276AB4 /* Headers */,
+				18AD1EB6309417DF00276AB4 /* Sources */,
+				18AD1EB7309417DF00276AB4 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			name = opener;
+			productName = opener;
+			productReference = 18AD1EB9309417DF00276AB4 /* libopener.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		18AD1EC2309417FA00276AB4 /* libinfect */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 18AD1EC4309417FA00276AB4 /* Build configuration list for PBXNativeTarget "libinfect" */;
+			buildPhases = (
+				18AD1EBF309417FA00276AB4 /* Headers */,
+				18AD1EC0309417FA00276AB4 /* Sources */,
+				18AD1EC1309417FA00276AB4 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			name = libinfect;
+			productName = libinfect;
+			productReference = 18AD1EC3309417FA00276AB4 /* liblibinfect.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -142,7 +201,13 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastUpgradeCheck = 2710;
 				TargetAttributes = {
-					18AD1E7D30940A9100276AB4 = {
+					18AD1EAA309416AD00276AB4 = {
+						CreatedOnToolsVersion = 27.1;
+					};
+					18AD1EB8309417DF00276AB4 = {
+						CreatedOnToolsVersion = 27.1;
+					};
+					18AD1EC2309417FA00276AB4 = {
 						CreatedOnToolsVersion = 27.1;
 					};
 				};
@@ -161,19 +226,30 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				18AD1E7D30940A9100276AB4 /* ammonia_am */,
+				18AD1EAA309416AD00276AB4 /* ammonia */,
+				18AD1EB8309417DF00276AB4 /* opener */,
+				18AD1EC2309417FA00276AB4 /* libinfect */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		18AD1E7B30940A9100276AB4 /* Sources */ = {
+		18AD1EA7309416AD00276AB4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
-				18AD1E9830940AC400276AB4 /* main.m in Sources */,
-				18AD1E9930940AC400276AB4 /* libinfect.m in Sources */,
-				18AD1E9A30940AC400276AB4 /* envbuf.c in Sources */,
-				18AD1E9B30940AC400276AB4 /* opener.m in Sources */,
+			);
+		};
+		18AD1EB6309417DF00276AB4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				18AD1EBD309417E800276AB4 /* opener.m in Sources */,
+			);
+		};
+		18AD1EC0309417FA00276AB4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				18AD1EC93094180000276AB4 /* libinfect.m in Sources */,
+				18AD1ECA3094180000276AB4 /* envbuf.c in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */
@@ -302,27 +378,65 @@
 			};
 			name = Release;
 		};
-		18AD1E8330940A9100276AB4 /* Debug configuration for PBXNativeTarget "ammonia_am" */ = {
+		18AD1EB0309416AD00276AB4 /* Debug configuration for PBXNativeTarget "ammonia" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		18AD1EB1309416AD00276AB4 /* Release configuration for PBXNativeTarget "ammonia" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		18AD1EBB309417DF00276AB4 /* Debug configuration for PBXNativeTarget "opener" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
-		18AD1E8430940A9100276AB4 /* Release configuration for PBXNativeTarget "ammonia_am" */ = {
+		18AD1EBC309417DF00276AB4 /* Release configuration for PBXNativeTarget "opener" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		18AD1EC5309417FA00276AB4 /* Debug configuration for PBXNativeTarget "libinfect" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		18AD1EC6309417FA00276AB4 /* Release configuration for PBXNativeTarget "libinfect" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -339,11 +453,27 @@
 			);
 			defaultConfigurationName = Release;
 		};
-		18AD1E8230940A9100276AB4 /* Build configuration list for PBXNativeTarget "ammonia_am" */ = {
+		18AD1EAF309416AD00276AB4 /* Build configuration list for PBXNativeTarget "ammonia" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				18AD1E8330940A9100276AB4 /* Debug configuration for PBXNativeTarget "ammonia_am" */,
-				18AD1E8430940A9100276AB4 /* Release configuration for PBXNativeTarget "ammonia_am" */,
+				18AD1EB0309416AD00276AB4 /* Debug configuration for PBXNativeTarget "ammonia" */,
+				18AD1EB1309416AD00276AB4 /* Release configuration for PBXNativeTarget "ammonia" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		18AD1EBA309417DF00276AB4 /* Build configuration list for PBXNativeTarget "opener" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				18AD1EBB309417DF00276AB4 /* Debug configuration for PBXNativeTarget "opener" */,
+				18AD1EBC309417DF00276AB4 /* Release configuration for PBXNativeTarget "opener" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		18AD1EC4309417FA00276AB4 /* Build configuration list for PBXNativeTarget "libinfect" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				18AD1EC5309417FA00276AB4 /* Debug configuration for PBXNativeTarget "libinfect" */,
+				18AD1EC6309417FA00276AB4 /* Release configuration for PBXNativeTarget "libinfect" */,
 			);
 			defaultConfigurationName = Release;
 		};
