@@ -13,6 +13,9 @@
 		18AD1EC83094180000276AB4 /* frida-gum.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E8D30940AC400276AB4 /* frida-gum.h */; };
 		18AD1EC93094180000276AB4 /* libinfect.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E8E30940AC400276AB4 /* libinfect.m */; };
 		18AD1ECA3094180000276AB4 /* envbuf.c in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E8C30940AC400276AB4 /* envbuf.c */; };
+		18AD1ECB30941A1C00276AB4 /* libfrida-gum.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18AD1EA330940F5900276AB4 /* libfrida-gum.a */; };
+		18AD1ECD30941B6E00276AB4 /* AMTweak.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1ECC30941B1B00276AB4 /* AMTweak.h */; };
+		18AD1ECF30941B7300276AB4 /* AMTweak.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1ECE30941B7200276AB4 /* AMTweak.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -46,6 +49,8 @@
 		18AD1EAB309416AD00276AB4 /* ammonia */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ammonia; sourceTree = BUILT_PRODUCTS_DIR; };
 		18AD1EB9309417DF00276AB4 /* libopener.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libopener.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		18AD1EC3309417FA00276AB4 /* liblibinfect.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liblibinfect.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		18AD1ECC30941B1B00276AB4 /* AMTweak.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AMTweak.h; sourceTree = "<group>"; };
+		18AD1ECE30941B7200276AB4 /* AMTweak.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AMTweak.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -70,6 +75,7 @@
 		18AD1EC1309417FA00276AB4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				18AD1ECB30941A1C00276AB4 /* libfrida-gum.a in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -119,6 +125,8 @@
 		18AD1E9330940AC400276AB4 /* opener */ = {
 			isa = PBXGroup;
 			children = (
+				18AD1ECE30941B7200276AB4 /* AMTweak.m */,
+				18AD1ECC30941B1B00276AB4 /* AMTweak.h */,
 				18AD1E9130940AC400276AB4 /* opener.h */,
 				18AD1E9230940AC400276AB4 /* opener.m */,
 			);
@@ -132,6 +140,7 @@
 			isa = PBXHeadersBuildPhase;
 			files = (
 				18AD1EBE309417E800276AB4 /* opener.h in Headers */,
+				18AD1ECD30941B6E00276AB4 /* AMTweak.h in Headers */,
 			);
 		};
 		18AD1EBF309417FA00276AB4 /* Headers */ = {
@@ -242,6 +251,7 @@
 		18AD1EB6309417DF00276AB4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
+				18AD1ECF30941B7300276AB4 /* AMTweak.m in Sources */,
 				18AD1EBD309417E800276AB4 /* opener.m in Sources */,
 			);
 		};
@@ -425,6 +435,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -437,6 +451,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
