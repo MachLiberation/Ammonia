@@ -19,6 +19,8 @@
 #include <sys/stat.h>
 #include <syslog.h>
 
+#include "AMTweak.h"
+
 #ifndef PATH_MAX
 #define PATH_MAX 4096
 #endif
@@ -95,92 +97,11 @@ static bool has_suffix(const char *string, const char *suffix)
                   suffix, suffix_len) == 0;
 }
 
-static void trim_line(char *line)
-{
-    if (!line) {
-        return;
-    }
-
-    line[strcspn(line, "\r\n")] = '\0';
-
-    char *start = line;
-
-    while (*start == ' ' || *start == '\t') {
-        ++start;
-    }
-
-    if (start != line) {
-        memmove(line, start, strlen(start) + 1);
-    }
-
-    size_t len = strlen(line);
-
-    while (len > 0 &&
-           (line[len - 1] == ' ' || line[len - 1] == '\t')) {
-        line[--len] = '\0';
-    }
-}
-
-/*
- * A rule matches either the complete executable path or its basename.
- * Blank lines and lines beginning with '#' are ignored.
- *
- * getline() avoids matching truncated, overlong rule lines.
- */
-static bool file_matches_process(
-    const char *rule_path,
-    const char *executable_path)
-{
-    if (!rule_path || !executable_path) {
-        return false;
-    }
-
-    FILE *file = fopen(rule_path, "r");
-
-    if (!file) {
-        syslog(LOG_ERR, "Cannot open rule file %s: %s",
-               rule_path, strerror(errno));
-        return false;
-    }
-
-    const char *basename = strrchr(executable_path, '/');
-    basename = basename ? basename + 1 : executable_path;
-
-    char *line = NULL;
-    size_t capacity = 0;
-    bool matched = false;
-
-    while (getline(&line, &capacity, file) != -1) {
-        trim_line(line);
-
-        if (line[0] == '\0' || line[0] == '#') {
-            continue;
-        }
-
-        if (strcmp(line, executable_path) == 0 ||
-            strcmp(line, basename) == 0) {
-            matched = true;
-            break;
-        }
-    }
-
-    if (ferror(file)) {
-        syslog(LOG_ERR, "Error reading rule file %s", rule_path);
-        matched = false;
-    }
-
-    free(line);
-    fclose(file);
-
-    return matched;
-}
-
 /*
  * Returns:
  *
  *   1: load the tweak
- *   0: skip the tweak
- *  -1: rule configuration error; skip the tweak
+ *  -1: skip the tweak
  *
  * Policy:
  *   1. An existing whitelist takes precedence.
@@ -192,77 +113,46 @@ static int should_load_tweak(
     const char *filename,
     const char *executable_path)
 {
-    char whitelist[PATH_MAX];
-    char blacklist[PATH_MAX];
-
-    int wn = snprintf(
-        whitelist, sizeof(whitelist),
-        "%s/tweaks/%s.whitelist", directory, filename);
-
-    int bn = snprintf(
-        blacklist, sizeof(blacklist),
-        "%s/tweaks/%s.blacklist", directory, filename);
-
-    if (wn < 0 || (size_t)wn >= sizeof(whitelist) ||
-        bn < 0 || (size_t)bn >= sizeof(blacklist)) {
-        syslog(LOG_ERR, "Rule path too long for tweak %s", filename);
-        return -1;
-    }
-
-    struct stat st;
-
-    if (stat(whitelist, &st) == 0) {
-        if (!S_ISREG(st.st_mode)) {
-            syslog(LOG_ERR, "Whitelist is not a regular file: %s",
-                   whitelist);
+    char tweak_path[PATH_MAX];
+    
+    if (snprintf(tweak_path,
+             sizeof(tweak_path),
+                 "%s/tweaks/%s", directory, filename) < sizeof(tweak_path)){
+        CFStringRef path = CFStringCreateWithCString(kCFAllocatorDefault,
+                                                     tweak_path,
+                                                     kCFStringEncodingUTF8);
+        
+        if (!path)
             return -1;
-        }
-
-        bool match = file_matches_process(
-            whitelist, executable_path);
-
-        if (!match) {
-            syslog(LOG_INFO, "Skipping %s: not whitelisted for %s",
-                   filename, executable_path);
-        }
-
-        return match ? 1 : 0;
-    }
-
-    if (errno != ENOENT) {
-        syslog(LOG_ERR, "Cannot inspect whitelist %s: %s",
-               whitelist, strerror(errno));
-        return -1;
-    }
-
-    if (stat(blacklist, &st) == 0) {
-        if (!S_ISREG(st.st_mode)) {
-            syslog(LOG_ERR, "Blacklist is not a regular file: %s",
-                   blacklist);
+        
+        AMTweakRef tweak =
+            AMTweakCreateWithPath(path);
+        
+        CFRelease(path);
+        
+        if (!tweak)
             return -1;
+        
+        CFStringRef exe_path = CFStringCreateWithCString(kCFAllocatorDefault,
+                                                         executable_path,
+                                                         kCFStringEncodingUTF8);
+        
+        bool should_inject = false;
+        
+        if (exe_path) {
+            should_inject = AMTweakShouldInjectToApplication(tweak, exe_path);
+            CFRelease(exe_path);
         }
-
-        bool match = file_matches_process(
-            blacklist, executable_path);
-
-        if (match) {
-            syslog(LOG_INFO, "Skipping %s: blacklisted for %s",
-                   filename, executable_path);
-        }
-
-        return match ? 0 : 1;
+        
+        AMTweakRelease(tweak);
+        
+        if (should_inject)
+            return 1;
+        else
+            return -1;
     }
-
-    if (errno != ENOENT) {
-        syslog(LOG_ERR, "Cannot inspect blacklist %s: %s",
-               blacklist, strerror(errno));
-        return -1;
-    }
-
-    syslog(LOG_INFO, "Skipping %s: no whitelist or blacklist",
-           filename);
-
-    return 0;
+    
+    return -1;
 }
 
 /*
@@ -531,7 +421,7 @@ void __attribute__((constructor)) ctor_main(void)
 
     Open(gum_interceptor);
 
-    void * targ = sandbox_init_with_parameters;
+    void *targ = sandbox_init_with_parameters;
     if (targ == NULL) {
         return;
     }
