@@ -35,3 +35,7 @@ Dissolve.metal
 Common.metal
 WaterSim.h
 Vanish.c
+
+#Packages for build system
+frida-gum.h
+libfrida-gum.a
