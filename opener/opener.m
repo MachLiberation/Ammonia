@@ -418,12 +418,7 @@ int sandbox_init_with_parameters_new(const char *profile, uint64_t flags, const 
 
 void __attribute__((constructor)) ctor_main(void)
 {
-    const bool is_webcontent   = is_process("com.apple.WebKit.WebContent");
     const bool is_windowserver = is_process("WindowServer");
-
-    if (is_webcontent) {
-        return;                      // no Gum, no tweaks
-    }
 
     pthread_once(&gum_init_once, initialize_gum);
 

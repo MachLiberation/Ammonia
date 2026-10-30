@@ -155,7 +155,7 @@ static int SpawnWrapper(
     char *const envp[],
     bool spawnp)
 {
-    if (getpid() == 1) ApplyWindowServerFix();
+    if (getpid() == 1)   ApplyWindowServerFix();
 
     char **env = envbuf_mutcopy((const char **)envp);
 
@@ -181,7 +181,7 @@ static int SpawnWrapper(
                (strstr(path, "Driver") == NULL) &&
                IsGUIRole(role)) {
 
-GraphicalProcess:
+        GraphicalProcess: ;
         const char *library = SupportFolderP "libopener.dylib";
         int index = envbuf_find((const char **)env,
                                 "DYLD_INSERT_LIBRARIES");
