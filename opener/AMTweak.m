@@ -3,7 +3,7 @@
 #include "AMTweak.h"
 
 struct __AMTweak {
-    CFStringRef tweak_library_path;
+    CFURLRef    tweak_library_url;
     CFStringRef tweak_name;
     CFArrayRef  blacklisted_apps;
     CFArrayRef  whitelisted_apps;
@@ -90,13 +90,16 @@ static CFArrayRef ParseTweakConfigurationFile(FILE *file){
     return array;
 }
 
-static CFArrayRef LoadTweakConfigurationFile(CFStringRef path){
+static CFArrayRef LoadTweakConfigurationFile(CFURLRef url){
+    if (url == NULL)
+        return NULL;
 
     char filesystem_path[PATH_MAX];
 
-    if (!CFStringGetFileSystemRepresentation(
-            path,
-            filesystem_path,
+    if (!CFURLGetFileSystemRepresentation(
+            url,
+            true,
+            (UInt8 *)filesystem_path,
             sizeof(filesystem_path)))
         return NULL;
 
@@ -112,6 +115,24 @@ static CFArrayRef LoadTweakConfigurationFile(CFStringRef path){
     return array;
 }
 
+static CFArrayRef LoadTweakConfigurationFileWithExtension(CFURLRef library_url,
+                                                          CFStringRef extension){
+    CFURLRef config_url = CFURLCreateCopyAppendingPathExtension(
+        kCFAllocatorDefault,
+        library_url,
+        extension
+    );
+
+    if (config_url == NULL)
+        return NULL;
+
+    CFArrayRef array = LoadTweakConfigurationFile(config_url);
+
+    CFRelease(config_url);
+
+    return array;
+}
+
 AMTweakRef AMTweakCreateWithPath(CFStringRef path){
     if (path == NULL)
         return NULL;
@@ -121,96 +142,142 @@ AMTweakRef AMTweakCreateWithPath(CFStringRef path){
     if (ref == NULL)
         return NULL;
 
-    ref->tweak_library_path = CFStringCreateCopy(
-        kCFAllocatorDefault,
-        path
-    );
-
-    if (ref->tweak_library_path == NULL){
-        AMTweakRelease(ref);
-        return NULL;
-    }
-
-    CFRange slash = CFStringFind(
-        path,
-        CFSTR("/"),
-        kCFCompareBackwards
-    );
-
-    CFIndex path_length = CFStringGetLength(path);
-
-    if (slash.location == kCFNotFound ||
-        slash.location == path_length - 1){
-
-        AMTweakRelease(ref);
-        return NULL;
-    }
-
-    CFRange component_range = CFRangeMake(
-        slash.location + 1,
-        path_length - slash.location - 1
-    );
-
-    ref->tweak_name = CFStringCreateWithSubstring(
+    ref->tweak_library_url = CFURLCreateWithFileSystemPath(
         kCFAllocatorDefault,
         path,
-        component_range
+        kCFURLPOSIXPathStyle,
+        false
     );
 
-    if (ref->tweak_name == NULL){
+    if (ref->tweak_library_url == NULL){
         AMTweakRelease(ref);
         return NULL;
     }
 
-    CFMutableStringRef blacklist_mutable =
-        CFStringCreateMutableCopy(
-                                  kCFAllocatorDefault,
-                                  0,
-                                  ref->tweak_library_path
-                                  );
+    ref->tweak_name = CFURLCopyLastPathComponent(ref->tweak_library_url);
 
-    CFMutableStringRef whitelist_mutable =
-        CFStringCreateMutableCopy(
-                                  kCFAllocatorDefault,
-                                  0,
-                                  ref->tweak_library_path
-                                  );
-
-    if (blacklist_mutable == NULL ||
-        whitelist_mutable == NULL){
-
-        if (blacklist_mutable != NULL)
-            CFRelease(blacklist_mutable);
-
-        if (whitelist_mutable != NULL)
-            CFRelease(whitelist_mutable);
+    if (ref->tweak_name == NULL ||
+        CFStringGetLength(ref->tweak_name) == 0 ||
+        CFStringCompare(ref->tweak_name, CFSTR("/"), 0) == kCFCompareEqualTo){
 
         AMTweakRelease(ref);
         return NULL;
     }
 
-    CFStringAppend(blacklist_mutable, CFSTR(".blacklist"));
-    CFStringAppend(whitelist_mutable, CFSTR(".whitelist"));
+    ref->blacklisted_apps = LoadTweakConfigurationFileWithExtension(ref->tweak_library_url, CFSTR("blacklist"));
 
-    ref->blacklisted_apps = LoadTweakConfigurationFile(
-        blacklist_mutable
-    );
-
-    ref->whitelisted_apps = LoadTweakConfigurationFile(
-        whitelist_mutable
-    );
-
-    CFRelease(blacklist_mutable);
-    CFRelease(whitelist_mutable);
+    ref->whitelisted_apps = LoadTweakConfigurationFileWithExtension(ref->tweak_library_url, CFSTR("whitelist"));
 
     return ref;
 }
 
+static bool PathContainsTypicallyProblematicDirectory(CFStringRef application_full_path){
+    CFArrayRef components = CFStringCreateArrayBySeparatingStrings(kCFAllocatorDefault,
+                                                                   application_full_path,
+                                                                   CFSTR("/"));
+    
+    if (components == NULL)
+        return false;
+    
+    CFStringRef problematic[] = {
+        CFSTR("libexec"),
+        CFSTR("sbin"),
+        CFSTR("DriverExtensions"),
+        CFSTR("Frameworks"),
+        CFSTR("PrivateFrameworks"),
+    };
+    
+    CFIndex problematic_count = sizeof(problematic) / sizeof(problematic[0]);
+    CFIndex count = CFArrayGetCount(components);
+    bool found = false;
+    
+    for (CFIndex i = 0; i < count && !found; i++){
+        CFStringRef component =
+            CFArrayGetValueAtIndex(components, i);
+        
+        for (CFIndex j = 0; j < problematic_count; j++){
+            if (CFStringCompare(component,
+                                problematic[j],
+                                0) == kCFCompareEqualTo){
+                found = true;
+                break;
+            }
+        }
+    }
+    
+    CFRelease(components);
+    
+    return found;
+}
+
+static bool ArrayContainsString(CFArrayRef array, CFStringRef string){
+    if (array == NULL || string == NULL)
+        return false;
+    
+    return CFArrayContainsValue(array,
+                                CFRangeMake(0, CFArrayGetCount(array)),
+                                string);
+}
+
 bool AMTweakShouldInjectToApplication(AMTweakRef tweak,
-                                      CFStringRef application){
+                                      CFStringRef application_full_path){
+    bool should_inject = true;
     
+    if (tweak == NULL
+        || application_full_path == NULL)
+        return false;
     
-    return false;
+    CFURLRef application_url = CFURLCreateWithFileSystemPath(
+        kCFAllocatorDefault,
+        application_full_path,
+        kCFURLPOSIXPathStyle,
+        false
+    );
+    
+    if (application_url == NULL)
+        return false;
+    
+    CFStringRef application_name =
+        CFURLCopyLastPathComponent(application_url);
+    
+    CFRelease(application_url);
+    
+    if (application_name == NULL)
+        return false;
+    
+    // A missing or empty list file is treated as "no list".
+    bool has_blacklist =
+        tweak->blacklisted_apps != NULL && CFArrayGetCount(tweak->blacklisted_apps) > 0;
+    bool has_whitelist =
+        tweak->whitelisted_apps != NULL && CFArrayGetCount(tweak->whitelisted_apps) > 0;
+    
+    // Problematic directory: no, unless a whitelist entry overrides below.
+    should_inject =
+        !PathContainsTypicallyProblematicDirectory(application_full_path);
+    
+    // Blacklist: "*" blocks everything, otherwise block exact name matches.
+    if (should_inject && has_blacklist){
+        if (ArrayContainsString(tweak->blacklisted_apps, CFSTR("*")) ||
+            ArrayContainsString(tweak->blacklisted_apps, application_name)){
+            should_inject = false;
+        }
+    }
+    
+    // No blacklist means nothing is injected by default: either only a whitelist
+    // was provided (only whitelisted apps get in), or no lists at all (nothing does).
+    if (should_inject && !has_blacklist){
+        should_inject = false;
+    }
+    
+    // Whitelist comes last so it overrides any of the blocks above (including problematic directory check, but that is why a whitelist is explicit).
+    if (!should_inject && has_whitelist){
+        if (ArrayContainsString(tweak->whitelisted_apps, application_name))
+            should_inject = true;
+    }
+    
+    CFRelease(application_name);
+    
+    return should_inject;
 }
 
 void AMTweakRelease(AMTweakRef tweak){
@@ -226,8 +293,8 @@ void AMTweakRelease(AMTweakRef tweak){
     if (tweak->tweak_name != NULL)
         CFRelease(tweak->tweak_name);
     
-    if (tweak->tweak_library_path != NULL)
-        CFRelease(tweak->tweak_library_path);
+    if (tweak->tweak_library_url != NULL)
+        CFRelease(tweak->tweak_library_url);
     
     free(tweak);
 }

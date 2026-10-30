@@ -17,7 +17,7 @@ CF_RETURNS_RETAINED
 AMTweakRef AMTweakCreateWithPath(CFStringRef path);
 
 /// Singular lookup to answer whether the application/executible should be injected with the tweak library. Internal logic checks the loaded tweak object's blacklist/whitelist and compares against a known baseline of "should not be" injected executible paths.
-bool AMTweakShouldInjectToApplication(AMTweakRef tweak, CFStringRef application);
+bool AMTweakShouldInjectToApplication(AMTweakRef tweak, CFStringRef application_full_path);
 
 /// Deallocates the internal structure and frees the memory of the tweak object. Can pass NULL but dereferencing an already-deallocated object will cause a crash.
 void AMTweakRelease(AMTweakRef tweak);
