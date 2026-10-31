@@ -126,7 +126,7 @@ static int (*SpawnOld)(
     pid_t *, const char *,
     const posix_spawn_file_actions_t *,
     const posix_spawnattr_t *,
-    char *const [], char *const []
+    char *const  [], char *const []
 );
 
 static int (*SpawnPOld)(
@@ -135,7 +135,7 @@ static int (*SpawnPOld)(
     const posix_spawnattr_t *,
     char *const [], char *const []
 );
-
+  
 static bool IsGUIRole(uint64_t role)
 {
     return role == PRIO_DARWIN_ROLE_UI_FOCAL ||
@@ -156,7 +156,7 @@ static int SpawnWrapper(
     bool spawnp)
 {
     if (getpid() == 1)   ApplyWindowServerFix();
-
+    
     char **env = envbuf_mutcopy((const char **)envp);
 
     if (!env) {
@@ -174,21 +174,19 @@ static int SpawnWrapper(
         goto GraphicalProcess;
     }
 
-    if (path && strcmp(path, "/usr/libexec/xpcproxy") == 0) {
+    if (path && strcmp(path, "/usr/libexec/xpcproxy") == 0){
         envbuf_setenv(&env, "DYLD_INSERT_LIBRARIES",
                       SupportFolderP "liblibinfect.dylib");
-    } else if (path &&
-               (strstr(path, "Driver") == NULL) &&
-               IsGUIRole(role)) {
-
+    } else if (path && (strstr(path, "Driver") == NULL) &&
+               (IsGUIRole(role))){
         GraphicalProcess: ;
+        
         const char *library = SupportFolderP "libopener.dylib";
         int index = envbuf_find((const char **)env,
                                 "DYLD_INSERT_LIBRARIES");
 
-        if (index >= 0) {
-            const char *existing =
-                env[index] + strlen("DYLD_INSERT_LIBRARIES=");
+        if (index >= 0){
+            const char *existing = env[index] + strlen("DYLD_INSERT_LIBRARIES=");
 
             char *combined = NULL;
 
