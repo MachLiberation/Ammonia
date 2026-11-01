@@ -14,7 +14,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-
+#include <AMWhitelist.h>
+#include <AMBlacklist.h>
+#include <AMTweak.h>
 
 #include <Foundation/Foundation.h>
 #include <dlfcn.h>
@@ -144,6 +146,40 @@ static bool IsGUIRole(uint64_t role)
            role == PRIO_DARWIN_ROLE_UI_NON_FOCAL;
 }
 
+static bool IsAllowedProcess(uint64_t PRIO_DARWIN_ROLE_T, const char *path, AMWhitelistRef whitelist){
+    if (IsGUIRole(PRIO_DARWIN_ROLE_T))
+        return true;
+    
+    if (whitelist && AMWhitelistGetCount(whitelist) > 0 && path){
+        bool wl_determination = false;
+        CFStringRef path_cfstr = CFStringCreateWithCString(kCFAllocatorDefault,
+                                                           path,
+                                                           kCFStringEncodingUTF8);
+        
+        wl_determination = AMWhitelistGetFullPathIsWhitelisted(whitelist,
+                                                               path_cfstr);
+        
+        if (path_cfstr){
+            CFURLRef path_URL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
+                                                              path_cfstr,
+                                                              kCFURLPOSIXPathStyle,
+                                                              false);
+            
+            CFRelease(path_cfstr);
+            
+            wl_determination  = AMWhitelistGetExecutableIsWhitelisted(whitelist,
+                                                                      path_URL);
+            
+            if (path_URL)
+                CFRelease(path_URL);
+        }
+        
+        return wl_determination;
+    }
+    
+    return false;
+}
+
 int posix_spawnattr_get_darwin_role_np(const posix_spawnattr_t * __restrict, uint64_t * __restrict) __API_AVAILABLE(macos(10.11), ios(9.0));
 
 static int SpawnWrapper(
@@ -155,11 +191,43 @@ static int SpawnWrapper(
     char *const envp[],
     bool spawnp)
 {
-    if (getpid() == 1)   ApplyWindowServerFix();
+    bool ws_inject_allowed = false;
+    AMWhitelistRef global_whitelist = NULL;
+    AMError wl_creation_result = AMWhitelistCreateFromGlobalWhitelist(&global_whitelist);
+    
+    if (getpid() == 1 && WindowServerSetForLoadingAfterBoot == false){
+        if (global_whitelist
+            && wl_creation_result == AMSuccess){
+            CFStringRef windowserver_cfstr_path = CFStringCreateWithCString(kCFAllocatorDefault,
+                                                                            WindowServerP,
+                                                                            kCFStringEncodingUTF8);
+            
+            if (windowserver_cfstr_path != NULL){
+                CFURLRef windowserver_URL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
+                                                                          windowserver_cfstr_path,
+                                                                          kCFURLPOSIXPathStyle,
+                                                                          false);
+                
+                CFRelease(windowserver_cfstr_path);
+                
+                if (windowserver_URL != NULL){
+                    if (AMWhitelistGetExecutableIsWhitelisted(global_whitelist,
+                                                              windowserver_URL)){
+                        ApplyWindowServerFix();
+                    }
+                    
+                    CFRelease(windowserver_URL);
+                }
+            }
+        }
+    }
     
     char **env = envbuf_mutcopy((const char **)envp);
 
     if (!env) {
+        if (global_whitelist)
+            AMRelease(global_whitelist);
+        
         return spawnp
             ? SpawnPOld(pid, path, actions, attr, argv, envp)
             : SpawnOld(pid, path, actions, attr, argv, envp);
@@ -170,16 +238,15 @@ static int SpawnWrapper(
         posix_spawnattr_get_darwin_role_np(attr, &role);
     }
 
-    if (path && strcmp(path, WindowServerP) == 0) {
-        goto GraphicalProcess;
-    }
+    /* BEGIN - INSERT LIBOPENER & LIBLIBINFECT */
 
     if (path && strcmp(path, "/usr/libexec/xpcproxy") == 0){
         envbuf_setenv(&env, "DYLD_INSERT_LIBRARIES",
                       SupportFolderP "liblibinfect.dylib");
-    } else if (path && (strstr(path, "Driver") == NULL) &&
-               (IsGUIRole(role))){
-        GraphicalProcess: ;
+    } else if (path
+               && (strstr(path, "Driver") == NULL)
+               && IsAllowedProcess(role, path, global_whitelist)){
+GraphicalProcess: ;
         
         const char *library = SupportFolderP "libopener.dylib";
         int index = envbuf_find((const char **)env,
@@ -198,12 +265,18 @@ static int SpawnWrapper(
             envbuf_setenv(&env, "DYLD_INSERT_LIBRARIES", library);
         }
     }
+    
+    /* END - INSERT LIBOPENER & LIBLIBINFECT */
 
     int result = spawnp
         ? SpawnPOld(pid, path, actions, attr, argv, env)
         : SpawnOld(pid, path, actions, attr, argv, env);
 
     envbuf_free(env);
+    
+    if (global_whitelist)
+        AMRelease(global_whitelist);
+    
     return result;
 }
 

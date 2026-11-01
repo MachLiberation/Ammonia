@@ -18,6 +18,18 @@ set(AMMONIA_SOURCES
     ammonia/main.h
 )
 
+# Add the utilities library
+file(GLOB UTILITIES_SOURCES utilities/*.c utilities/*.h utilities/*.m)
+add_library(AmmoniaUtilities STATIC ${UTILITIES_SOURCES})
+
+target_link_libraries(AmmoniaUtilities
+    ${COREFOUNDATION_FRAMEWORK}
+)
+
+target_include_directories(AmmoniaUtilities PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities
+)
+
 add_executable(ammonia ${AMMONIA_SOURCES})
 
 target_include_directories(ammonia PRIVATE
@@ -44,6 +56,7 @@ target_link_libraries(libinfect
     ${COCOA_FRAMEWORK}
     ${COREFOUNDATION_FRAMEWORK} 
     ${CMAKE_CURRENT_SOURCE_DIR}/libfrida-gum-x86_64-arm64e-arm64.a
+    AmmoniaUtilities
 )
 
 target_include_directories(libinfect PRIVATE
@@ -64,6 +77,7 @@ target_link_libraries(opener
     ${FD_FRAMEWORK}
     ${CMAKE_CURRENT_SOURCE_DIR}/libfrida-gum-x86_64-arm64e-arm64.a
     "-framework Security"
+    AmmoniaUtilities
 )
 target_include_directories(opener PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
