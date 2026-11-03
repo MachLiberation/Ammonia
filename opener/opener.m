@@ -18,8 +18,10 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <syslog.h>
-
-#include "AMTweak.h"
+#include <CoreFoundation/CoreFoundation.h>
+#include <AMWhitelist.h>
+#include <AMBlacklist.h>
+#include <AMTweak.h>
 
 #ifndef PATH_MAX
 #define PATH_MAX 4096
@@ -150,7 +152,7 @@ static int should_load_tweak(
             CFRelease(exe_path);
         }
         
-        AMTweakRelease(tweak);
+        AMRelease(tweak);
         
         if (should_inject)
             return 1;

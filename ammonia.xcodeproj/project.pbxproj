@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1829C1EB309663A900B9FE1A /* libAmmoniaUtilities.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1829C1DD3096624500B9FE1A /* libAmmoniaUtilities.a */; };
+		188172A13097D2A8004213E5 /* libAmmoniaUtilities.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1829C1DD3096624500B9FE1A /* libAmmoniaUtilities.a */; };
 		18AD1EBD309417E800276AB4 /* opener.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E9230940AC400276AB4 /* opener.m */; };
 		18AD1EBE309417E800276AB4 /* opener.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E9130940AC400276AB4 /* opener.h */; };
 		18AD1EC73094180000276AB4 /* envbuf.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1E8B30940AC400276AB4 /* envbuf.h */; };
@@ -14,9 +16,17 @@
 		18AD1EC93094180000276AB4 /* libinfect.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E8E30940AC400276AB4 /* libinfect.m */; };
 		18AD1ECA3094180000276AB4 /* envbuf.c in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1E8C30940AC400276AB4 /* envbuf.c */; };
 		18AD1ECB30941A1C00276AB4 /* libfrida-gum.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 18AD1EA330940F5900276AB4 /* libfrida-gum.a */; };
-		18AD1ECD30941B6E00276AB4 /* AMTweak.h in Headers */ = {isa = PBXBuildFile; fileRef = 18AD1ECC30941B1B00276AB4 /* AMTweak.h */; };
-		18AD1ECF30941B7300276AB4 /* AMTweak.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AD1ECE30941B7200276AB4 /* AMTweak.m */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1829C1EC309663A900B9FE1A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 18AD1E7630940A9100276AB4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1829C1DC3096624500B9FE1A;
+			remoteInfo = AmmoniaUtilities;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		18AD1EA9309416AD00276AB4 /* CopyFiles */ = {
@@ -30,6 +40,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1829C1DD3096624500B9FE1A /* libAmmoniaUtilities.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libAmmoniaUtilities.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		18AD1E8530940AC400276AB4 /* ammonia.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ammonia.h; sourceTree = "<group>"; };
 		18AD1E8930940AC400276AB4 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		18AD1E8A30940AC400276AB4 /* compile.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = compile.sh; sourceTree = "<group>"; };
@@ -49,11 +60,55 @@
 		18AD1EAB309416AD00276AB4 /* ammonia */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ammonia; sourceTree = BUILT_PRODUCTS_DIR; };
 		18AD1EB9309417DF00276AB4 /* libopener.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libopener.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		18AD1EC3309417FA00276AB4 /* liblibinfect.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liblibinfect.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		18AD1ECC30941B1B00276AB4 /* AMTweak.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AMTweak.h; sourceTree = "<group>"; };
-		18AD1ECE30941B7200276AB4 /* AMTweak.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AMTweak.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		1829C1E2309662C200B9FE1A /* Exceptions for "utilities" folder in "ammonia" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AMBase.m,
+				AMBlacklist.m,
+				AMList.m,
+				AMTweak.m,
+				AMWhitelist.m,
+			);
+			target = 18AD1EAA309416AD00276AB4 /* ammonia */;
+		};
+		1829C1E5309662CB00B9FE1A /* Exceptions for "utilities" folder in "AmmoniaUtilities" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				_AMBase.h,
+				AMBase.h,
+				AMBase.m,
+				AMBlacklist.h,
+				AMBlacklist.m,
+				AMList.h,
+				AMList.m,
+				AMTweak.h,
+				AMTweak.m,
+				AMWhitelist.h,
+				AMWhitelist.m,
+			);
+			publicHeaders = (
+				AMBase.h,
+				AMBlacklist.h,
+				AMTweak.h,
+				AMWhitelist.h,
+			);
+			target = 1829C1DC3096624500B9FE1A /* AmmoniaUtilities */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		1829C1E1309662B400B9FE1A /* utilities */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1829C1E2309662C200B9FE1A /* Exceptions for "utilities" folder in "ammonia" target */,
+				1829C1E5309662CB00B9FE1A /* Exceptions for "utilities" folder in "AmmoniaUtilities" target */,
+			);
+			path = utilities;
+			sourceTree = "<group>";
+		};
 		18AD1EAC309416AD00276AB4 /* ammonia */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = ammonia;
@@ -62,6 +117,11 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		1829C1DB3096624500B9FE1A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
 		18AD1EA8309416AD00276AB4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
@@ -70,20 +130,30 @@
 		18AD1EB7309417DF00276AB4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				1829C1EB309663A900B9FE1A /* libAmmoniaUtilities.a in Frameworks */,
 			);
 		};
 		18AD1EC1309417FA00276AB4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				188172A13097D2A8004213E5 /* libAmmoniaUtilities.a in Frameworks */,
 				18AD1ECB30941A1C00276AB4 /* libfrida-gum.a in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1829C1E6309662F300B9FE1A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		18AD1E7530940A9100276AB4 = {
 			isa = PBXGroup;
 			children = (
+				1829C1E1309662B400B9FE1A /* utilities */,
 				18AD1E8530940AC400276AB4 /* ammonia.h */,
 				18AD1E8930940AC400276AB4 /* CMakeLists.txt */,
 				18AD1E8A30940AC400276AB4 /* compile.sh */,
@@ -97,6 +167,7 @@
 				18AD1EA130940F5900276AB4 /* frida-gum.h */,
 				18AD1EA330940F5900276AB4 /* libfrida-gum.a */,
 				18AD1EAC309416AD00276AB4 /* ammonia */,
+				1829C1E6309662F300B9FE1A /* Frameworks */,
 				18AD1E7F30940A9100276AB4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -107,6 +178,7 @@
 				18AD1EAB309416AD00276AB4 /* ammonia */,
 				18AD1EB9309417DF00276AB4 /* libopener.dylib */,
 				18AD1EC3309417FA00276AB4 /* liblibinfect.dylib */,
+				1829C1DD3096624500B9FE1A /* libAmmoniaUtilities.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -125,8 +197,6 @@
 		18AD1E9330940AC400276AB4 /* opener */ = {
 			isa = PBXGroup;
 			children = (
-				18AD1ECE30941B7200276AB4 /* AMTweak.m */,
-				18AD1ECC30941B1B00276AB4 /* AMTweak.h */,
 				18AD1E9130940AC400276AB4 /* opener.h */,
 				18AD1E9230940AC400276AB4 /* opener.m */,
 			);
@@ -136,11 +206,15 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		1829C1D93096624500B9FE1A /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			files = (
+			);
+		};
 		18AD1EB5309417DF00276AB4 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			files = (
 				18AD1EBE309417E800276AB4 /* opener.h in Headers */,
-				18AD1ECD30941B6E00276AB4 /* AMTweak.h in Headers */,
 			);
 		};
 		18AD1EBF309417FA00276AB4 /* Headers */ = {
@@ -153,6 +227,21 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		1829C1DC3096624500B9FE1A /* AmmoniaUtilities */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1829C1E03096624600B9FE1A /* Build configuration list for PBXNativeTarget "AmmoniaUtilities" */;
+			buildPhases = (
+				1829C1D93096624500B9FE1A /* Headers */,
+				1829C1DA3096624500B9FE1A /* Sources */,
+				1829C1DB3096624500B9FE1A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			name = AmmoniaUtilities;
+			productName = AmmoniaUtilities;
+			productReference = 1829C1DD3096624500B9FE1A /* libAmmoniaUtilities.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		18AD1EAA309416AD00276AB4 /* ammonia */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 18AD1EAF309416AD00276AB4 /* Build configuration list for PBXNativeTarget "ammonia" */;
@@ -164,6 +253,7 @@
 			buildRules = (
 			);
 			fileSystemSynchronizedGroups = (
+				1829C1E1309662B400B9FE1A /* utilities */,
 				18AD1EAC309416AD00276AB4 /* ammonia */,
 			);
 			name = ammonia;
@@ -180,6 +270,9 @@
 				18AD1EB7309417DF00276AB4 /* Frameworks */,
 			);
 			buildRules = (
+			);
+			dependencies = (
+				1829C1ED309663A900B9FE1A /* PBXTargetDependency */,
 			);
 			name = opener;
 			productName = opener;
@@ -210,6 +303,9 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastUpgradeCheck = 2710;
 				TargetAttributes = {
+					1829C1DC3096624500B9FE1A = {
+						CreatedOnToolsVersion = 27.1;
+					};
 					18AD1EAA309416AD00276AB4 = {
 						CreatedOnToolsVersion = 27.1;
 					};
@@ -238,11 +334,17 @@
 				18AD1EAA309416AD00276AB4 /* ammonia */,
 				18AD1EB8309417DF00276AB4 /* opener */,
 				18AD1EC2309417FA00276AB4 /* libinfect */,
+				1829C1DC3096624500B9FE1A /* AmmoniaUtilities */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		1829C1DA3096624500B9FE1A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 		18AD1EA7309416AD00276AB4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
@@ -251,7 +353,6 @@
 		18AD1EB6309417DF00276AB4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
-				18AD1ECF30941B7300276AB4 /* AMTweak.m in Sources */,
 				18AD1EBD309417E800276AB4 /* opener.m in Sources */,
 			);
 		};
@@ -264,7 +365,37 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		1829C1ED309663A900B9FE1A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1829C1DC3096624500B9FE1A /* AmmoniaUtilities */;
+			targetProxy = 1829C1EC309663A900B9FE1A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		1829C1DE3096624600B9FE1A /* Debug configuration for PBXNativeTarget "AmmoniaUtilities" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		1829C1DF3096624600B9FE1A /* Release configuration for PBXNativeTarget "AmmoniaUtilities" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				MACOSX_DEPLOYMENT_TARGET = 15.6;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		18AD1E8030940A9100276AB4 /* Debug configuration for PBXProject "ammonia" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -413,6 +544,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = "$(BUILT_PRODUCTS_DIR)/usr/local/include";
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -426,6 +558,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = "$(BUILT_PRODUCTS_DIR)/usr/local/include";
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -439,6 +572,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = "$(BUILT_PRODUCTS_DIR)/usr/local/include/**";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -456,6 +590,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = "$(BUILT_PRODUCTS_DIR)/usr/local/include/**";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
@@ -469,6 +604,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		1829C1E03096624600B9FE1A /* Build configuration list for PBXNativeTarget "AmmoniaUtilities" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1829C1DE3096624600B9FE1A /* Debug configuration for PBXNativeTarget "AmmoniaUtilities" */,
+				1829C1DF3096624600B9FE1A /* Release configuration for PBXNativeTarget "AmmoniaUtilities" */,
+			);
+			defaultConfigurationName = Release;
+		};
 		18AD1E7930940A9100276AB4 /* Build configuration list for PBXProject "ammonia" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
