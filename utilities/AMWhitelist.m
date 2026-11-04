@@ -89,11 +89,13 @@ AMError AMWhitelistCreateWithWhitelistAtURL(CFURLRef URL, AMWhitelistRef *out){
         return AMErrorCouldNotAllocateBaseClass;
     }
     
-    AMListRef global_list = AMListCreateWithFileAtURL(GlobalWhitelistURL());
-    
-    if (global_list){
-        AMListAppendList(inner_list, global_list);
-        AMRelease(global_list);
+    if (!CFEqual(URL, GlobalWhitelistURL())){
+        AMListRef global_list = AMListCreateWithFileAtURL(GlobalWhitelistURL());
+        
+        if (global_list){
+            AMListAppendList(inner_list, global_list);
+            AMRelease(global_list);
+        }
     }
     
     return_list->list = inner_list;
