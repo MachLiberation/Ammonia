@@ -14,7 +14,7 @@ extern "C" {
 struct __AMWhitelist;
 typedef struct __AMWhitelist *AMWhitelistRef;
 
-#define AM_GLOBAL_WHITELIST_PATH "/private/var/ammonia/core/ammonia_global.whitelist"
+#define AM_GLOBAL_WHITELIST_PATH "/private/var/ammonia/core/ammonia_global.allowlist"
 
 /// Creates and assigns an AMWhitelistRef to the out parameter. Error is returned if creation is not possible, the input was invalid, or, returns AMError.AMSuccess if all checks succeed.
 AMError AMWhitelistCreateWithWhitelistAtURL(CFURLRef URL, AMWhitelistRef AM_RETURNS_RETAINED *out);

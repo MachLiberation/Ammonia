@@ -191,7 +191,6 @@ static int SpawnWrapper(
     char *const envp[],
     bool spawnp)
 {
-    bool ws_inject_allowed = false;
     AMWhitelistRef global_whitelist = NULL;
     AMError wl_creation_result = AMWhitelistCreateFromGlobalWhitelist(&global_whitelist);
     

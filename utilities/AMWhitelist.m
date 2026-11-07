@@ -67,7 +67,7 @@ AMError AMWhitelistCreateWithWhitelistAtURL(CFURLRef URL, AMWhitelistRef *out){
         return AMErrorURLDoesNotHaveExtension;
     
     if (CFStringCompare(extension,
-                        CFSTR("whitelist"),
+                        CFSTR("allowlist"),
                         kCFCompareCaseInsensitive) != kCFCompareEqualTo){
         CFRelease(extension);
         return AMErrorURLDoesNotMatchExpectedExtension;

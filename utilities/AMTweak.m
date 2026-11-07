@@ -105,7 +105,7 @@ AMTweakRef AMTweakCreateWithPath(CFStringRef path){
     
     CFURLRef whitelist_url  = CFURLCreateCopyAppendingPathExtension(kCFAllocatorDefault,
                                                                     ref->tweak_library_url,
-                                                                    CFSTR("whitelist"));
+                                                                    CFSTR("allowlist"));
 
     if (whitelist_url){
         AMWhitelistRef whitelist = NULL;
