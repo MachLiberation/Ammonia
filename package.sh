@@ -54,6 +54,7 @@ mkdir $ammoniabuildfolder/temp/ammonia/core
 mkdir $ammoniabuildfolder/temp/ammonia/core/tweaks
 cp $ammoniabuildfolder/./fridagum.dylib $ammoniabuildfolder/temp/ammonia/core/
 cp $ammoniabuildfolder/./Build/ammonia $ammoniabuildfolder/temp/ammonia/core/
+chmod +x $ammoniabuildfolder/temp/ammonia/core/ammonia
 cp $ammoniabuildfolder/./Build/liblibinfect.dylib $ammoniabuildfolder/temp/ammonia/core/
 cp $ammoniabuildfolder/./Build/libopener.dylib $ammoniabuildfolder/temp/ammonia/core/
 
