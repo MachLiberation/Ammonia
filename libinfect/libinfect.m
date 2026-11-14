@@ -17,6 +17,7 @@
 #include <AMWhitelist.h>
 #include <AMBlacklist.h>
 #include <AMTweak.h>
+#include <AMGlobalsProcessor.h>
 
 #include <Foundation/Foundation.h>
 #include <dlfcn.h>
@@ -37,6 +38,8 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <CoreFoundation/CoreFoundation.h>
+
+#define WindowServerP "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
 
 Boolean killall(const char *executablePathToKill, bool softly) {
     if (!executablePathToKill)
@@ -110,8 +113,6 @@ Boolean killall(const char *executablePathToKill, bool softly) {
     return signaled;
 }
 
-#define WindowServerP "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer"
-
 Boolean WindowServerSetForLoadingAfterBoot = false;
 Boolean ApplyWindowServerFix(void) {
     if (!WindowServerSetForLoadingAfterBoot) {
@@ -146,36 +147,20 @@ static bool IsGUIRole(uint64_t role)
            role == PRIO_DARWIN_ROLE_UI_NON_FOCAL;
 }
 
-static bool IsAllowedProcess(uint64_t PRIO_DARWIN_ROLE_T, const char *path, AMWhitelistRef whitelist){
-    if (IsGUIRole(PRIO_DARWIN_ROLE_T))
+static bool IsAllowedProcess(uint64_t PRIO_DARWIN_ROLE_T,
+                             const char *path,
+                             AMWhitelistRef whitelist,
+                             AMBlacklistRef blacklist){
+    if (!path)
+        return false;
+    
+    if (AMGlobalsGetGloballyAllowedProcess(whitelist,
+                                           path))
         return true;
     
-    if (whitelist && AMWhitelistGetCount(whitelist) > 0 && path){
-        bool wl_determination = false;
-        CFStringRef path_cfstr = CFStringCreateWithCString(kCFAllocatorDefault,
-                                                           path,
-                                                           kCFStringEncodingUTF8);
-        
-        wl_determination = AMWhitelistGetFullPathIsWhitelisted(whitelist,
-                                                               path_cfstr);
-        
-        if (path_cfstr){
-            CFURLRef path_URL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
-                                                              path_cfstr,
-                                                              kCFURLPOSIXPathStyle,
-                                                              false);
-            
-            CFRelease(path_cfstr);
-            
-            wl_determination  = AMWhitelistGetExecutableIsWhitelisted(whitelist,
-                                                                      path_URL);
-            
-            if (path_URL)
-                CFRelease(path_URL);
-        }
-        
-        return wl_determination;
-    }
+    if (IsGUIRole(PRIO_DARWIN_ROLE_T) && AMGlobalsGetGloballyBlacklistedProcess(blacklist,
+                                                                                path) == false)
+        return true;
     
     return false;
 }
@@ -192,33 +177,13 @@ static int SpawnWrapper(
     bool spawnp)
 {
     AMWhitelistRef global_whitelist = NULL;
+    AMBlacklistRef global_blacklist = NULL;
     AMError wl_creation_result = AMWhitelistCreateFromGlobalWhitelist(&global_whitelist);
+    AMError bl_creation_result = AMBlacklistCreateFromGlobalBlacklist(&global_blacklist);
     
     if (getpid() == 1 && WindowServerSetForLoadingAfterBoot == false){
-        if (global_whitelist
-            && wl_creation_result == AMSuccess){
-            CFStringRef windowserver_cfstr_path = CFStringCreateWithCString(kCFAllocatorDefault,
-                                                                            WindowServerP,
-                                                                            kCFStringEncodingUTF8);
-            
-            if (windowserver_cfstr_path != NULL){
-                CFURLRef windowserver_URL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
-                                                                          windowserver_cfstr_path,
-                                                                          kCFURLPOSIXPathStyle,
-                                                                          false);
-                
-                CFRelease(windowserver_cfstr_path);
-                
-                if (windowserver_URL != NULL){
-                    if (AMWhitelistGetExecutableIsWhitelisted(global_whitelist,
-                                                              windowserver_URL)){
-                        ApplyWindowServerFix();
-                    }
-                    
-                    CFRelease(windowserver_URL);
-                }
-            }
-        }
+        if (AMGlobalsGetWindowServerInjectionIsAllowed(global_whitelist))
+            ApplyWindowServerFix();
     }
     
     char **env = envbuf_mutcopy((const char **)envp);
@@ -226,6 +191,8 @@ static int SpawnWrapper(
     if (!env) {
         if (global_whitelist)
             AMRelease(global_whitelist);
+        if (global_blacklist)
+            AMRelease(global_blacklist);
         
         return spawnp
             ? SpawnPOld(pid, path, actions, attr, argv, envp)
@@ -238,19 +205,23 @@ static int SpawnWrapper(
     }
 
     /* BEGIN - INSERT LIBOPENER & LIBLIBINFECT */
-
     if (path && strcmp(path, "/usr/libexec/xpcproxy") == 0){
-        envbuf_setenv(&env, "DYLD_INSERT_LIBRARIES",
+        envbuf_setenv(&env,
+                      "DYLD_INSERT_LIBRARIES",
                       SupportFolderP "liblibinfect.dylib");
     } else if (path
                && (strstr(path, "Driver") == NULL)
-               && IsAllowedProcess(role, path, global_whitelist)){
+               && IsAllowedProcess(role,
+                                   path,
+                                   global_whitelist,
+                                   global_blacklist)){
 GraphicalProcess: ;
         
         const char *library = SupportFolderP "libopener.dylib";
+        
         int index = envbuf_find((const char **)env,
                                 "DYLD_INSERT_LIBRARIES");
-
+        
         if (index >= 0){
             const char *existing = env[index] + strlen("DYLD_INSERT_LIBRARIES=");
 
@@ -275,6 +246,8 @@ GraphicalProcess: ;
     
     if (global_whitelist)
         AMRelease(global_whitelist);
+    if (global_blacklist)
+        AMRelease(global_blacklist);
     
     return result;
 }

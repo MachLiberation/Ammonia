@@ -68,6 +68,7 @@
 			membershipExceptions = (
 				AMBase.m,
 				AMBlacklist.m,
+				AMGlobalsProcessor.m,
 				AMList.m,
 				AMTweak.m,
 				AMWhitelist.m,
@@ -82,6 +83,8 @@
 				AMBase.m,
 				AMBlacklist.h,
 				AMBlacklist.m,
+				AMGlobalsProcessor.h,
+				AMGlobalsProcessor.m,
 				AMList.h,
 				AMList.m,
 				AMTweak.h,
@@ -92,6 +95,7 @@
 			publicHeaders = (
 				AMBase.h,
 				AMBlacklist.h,
+				AMGlobalsProcessor.h,
 				AMTweak.h,
 				AMWhitelist.h,
 			);
