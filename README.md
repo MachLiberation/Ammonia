@@ -59,5 +59,13 @@ void LoadFunction(void *gum_interceptor) {
 }
 ```
 
+### 4. Allowlisting and Blacklisting
+
+Ammonia respects two separate types of capability allow/blacklists. Per-tweak level, and global.
+
+Global allowlists should be placed in the core folder and be named 'ammonia_global.allowlist'. The usage of this global list has a few benefits. The first, by listing WindowServer, windowserver tweaking is possible. The second, you can override the PRIO role check if needed.
+
+Global blacklists function much like local per-tweak blacklists, and are named 'ammonia_global.blacklist'. The entries in this file (as well as the allowlist) are inserted by the per-tweak lists. You may also use a single '*' character in any blacklist to blacklist all applications by default, in which case only those in the allowlist will be injected with tweak libraries.
+
 ## Support Ammonia
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/corebedtime)
