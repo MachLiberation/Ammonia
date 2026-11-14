@@ -2,7 +2,7 @@ Ammonia is a modern macOS extension/tweak loader, enabling modifications on Mac 
 
 # Quick Install
 - Turn off SIP
-- Install PKG https://github.com/CoreBedtime/ammonia/releases/download/1.5/ammonia.pkg
+- Install PKG https://github.com/MachLiberation/Ammonia/releases/tag/v1.6
 - Enable arm64e ABI
   - sudo nvram boot-args=-arm64e_preview_abi
 - Reboot.
