@@ -1,3 +1,9 @@
+<p align="center">
+  <img src="docs/icons/ammonia-readme.png" width="128" height="128" alt="Ammonia Injector">
+</p>
+
+<p align="center"><b>Ammonia Injector</b> — macOS tweak loader with sticky live Safe Mode</p>
+
 Ammonia is a modern macOS extension/tweak loader, enabling modifications on Mac systems. SIP must be disabled. 
 
 # Quick Install
@@ -69,3 +75,18 @@ Global blacklists function much like local per-tweak blacklists, and are named '
 
 ## Support Ammonia
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/corebedtime)
+
+# Safe Mode
+
+Sticky live quarantine (Substrate-style). A critical-host crash arms `/private/var/ammonia/core/.safemode.pending`; the next spawn promotes it to sticky `.safemode`, which skips tweak injection into GUI / critical hosts. `Ammonia Injector.app` (LaunchAgent) shows Exit / Reveal Tweaks after login.
+
+**FileVault:** with FileVault on, Ammonia starts after first login. If WindowServer is allowlisted, the first boot-time WindowServer kill can bounce you to login once — Safe Mode does not change that.
+
+```sh
+sudo touch /private/var/ammonia/core/.safemode          # enter
+sudo rm -f /private/var/ammonia/core/.safemode*         # exit
+# or: .../gui/Ammonia\ Injector.app/Contents/MacOS/Ammonia\ Injector --exit
+sudo touch /private/var/ammonia/core/.safemode.disable  # skip launchd infection
+```
+
+Optional host list: `/private/var/ammonia/core/ammonia_safemode.hosts` (one basename per line).

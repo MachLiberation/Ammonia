@@ -28,6 +28,7 @@ target_link_libraries(AmmoniaUtilities
 
 target_include_directories(AmmoniaUtilities PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/utilities
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 add_executable(ammonia ${AMMONIA_SOURCES})
@@ -82,6 +83,34 @@ target_link_libraries(opener
 target_include_directories(opener PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+# Post-login Safe Mode UI — Ammonia Injector.app with Icon Composer icon
+set(AMMONIA_INJECTOR_ICNS "${CMAKE_CURRENT_SOURCE_DIR}/docs/icons/AppIcon.icns")
+add_executable(AmmoniaSafeMode MACOSX_BUNDLE safemode/AmmoniaSafeMode.m)
+set_target_properties(AmmoniaSafeMode PROPERTIES
+    OUTPUT_NAME "Ammonia Injector"
+    MACOSX_BUNDLE TRUE
+    MACOSX_BUNDLE_BUNDLE_NAME "Ammonia Injector"
+    MACOSX_BUNDLE_GUI_IDENTIFIER "com.ammonia.injector"
+    MACOSX_BUNDLE_BUNDLE_VERSION "1.0"
+    MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
+    MACOSX_BUNDLE_ICON_FILE AppIcon.icns
+    MACOSX_BUNDLE_INFO_STRING "Ammonia Injector Safe Mode"
+)
+target_include_directories(AmmoniaSafeMode PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+target_link_libraries(AmmoniaSafeMode
+    ${COCOA_FRAMEWORK}
+    ${COREFOUNDATION_FRAMEWORK}
+)
+target_compile_options(AmmoniaSafeMode PRIVATE -fobjc-arc)
+if(EXISTS "${AMMONIA_INJECTOR_ICNS}")
+    set_source_files_properties("${AMMONIA_INJECTOR_ICNS}" PROPERTIES
+        MACOSX_PACKAGE_LOCATION Resources
+    )
+    target_sources(AmmoniaSafeMode PRIVATE "${AMMONIA_INJECTOR_ICNS}")
+endif()
 
 # set(APP_SOURCES
 #     app/main.m
