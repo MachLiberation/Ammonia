@@ -1,0 +1,24 @@
+name: Build Ammonia
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: macos-15
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: make
+      run: |
+        chmod +x ./setup_frida.sh; ./setup_frida.sh
+        chmod +x ./compile.sh; ./compile.sh
+        chmod +x ./package.sh; ./package.sh
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v6.0.0
+      with:
+        path: ./ammonia.pkg
+          
