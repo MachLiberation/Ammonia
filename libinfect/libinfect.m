@@ -155,7 +155,8 @@ static bool IsAllowedProcess(uint64_t PRIO_DARWIN_ROLE_T,
         return false;
     
     if (AMGlobalsGetGloballyAllowedProcess(whitelist,
-                                           path))
+                                           path)
+        || AMGlobalsGetPRIOBypassStatusForProcess(whitelist, path))
         return true;
     
     if (IsGUIRole(PRIO_DARWIN_ROLE_T) && AMGlobalsGetGloballyBlacklistedProcess(blacklist,

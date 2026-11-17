@@ -116,3 +116,56 @@ bool AMGlobalsGetGloballyBlacklistedProcess(AMBlacklistRef global_blacklist, con
     CFRelease(path_URL);
     return disallowed;
 }
+
+bool AMGlobalsGetPRIOBypassStatusForProcess(AMWhitelistRef global_whitelist, const char *path){
+    if (global_whitelist == NULL || path == NULL)
+        return false;
+    
+    if (AMWhitelistGetCount(global_whitelist) == 0)
+        return false;
+    
+    CFStringRef path_cfstr = CFStringCreateWithCString(kCFAllocatorDefault,
+                                                       path,
+                                                       kCFStringEncodingUTF8);
+    
+    if (!path_cfstr)
+        return false;
+    
+    CFURLRef path_URL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
+                                                      path_cfstr,
+                                                      kCFURLPOSIXPathStyle,
+                                                      false);
+    
+    if (!path_URL){
+        CFRelease(path_cfstr);
+        return false;
+    }
+    
+    CFStringRef last_comp = CFURLCopyLastPathComponent(path_URL);
+    
+    if (!last_comp){
+        CFRelease(path_cfstr);
+        CFRelease(path_URL);
+        return false;
+    }
+    
+    CFMutableStringRef mut_str = CFStringCreateMutableCopy(kCFAllocatorDefault, 0, CFSTR("BypassPrio="));
+    
+    if (!mut_str){
+        CFRelease(path_cfstr);
+        CFRelease(path_URL);
+        CFRelease(last_comp);
+        return false;
+    }
+    
+    CFStringAppend(mut_str, last_comp);
+    
+    bool bypassed = false;
+    
+    bypassed = AMWhitelistGetFileContainsLine(global_whitelist, mut_str);
+    
+    CFRelease(path_cfstr);
+    CFRelease(path_URL);
+    CFRelease(last_comp);
+    return bypassed;
+}

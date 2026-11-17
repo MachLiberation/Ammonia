@@ -34,6 +34,9 @@ CFIndex AMWhitelistGetCount(AMWhitelistRef whitelist);
 /// Creates and assigns an AMWhitelistRef to the out parameter. Error is return if creation is not possible. The whitelist is read from the global location (/private/var/ammonia/core/ammonia\_global.whitelist).
 AMError AMWhitelistCreateFromGlobalWhitelist(AMWhitelistRef AM_RETURNS_RETAINED *out);
 
+/// Raw check if the exact line is in the file. Primarily used to check for BypassPrio= appended lines in the global list.
+bool AMWhitelistGetFileContainsLine(AMWhitelistRef obj, CFStringRef line);
+
 #ifdef __cplusplus
 }
 #endif

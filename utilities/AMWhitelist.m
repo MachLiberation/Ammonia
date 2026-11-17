@@ -165,4 +165,13 @@ AMError AMWhitelistCreateFromGlobalWhitelist(AMWhitelistRef AM_RETURNS_RETAINED 
     return error;
 }
 
+bool AMWhitelistGetFileContainsLine(AMWhitelistRef obj, CFStringRef line){
+    if (obj == NULL || line == NULL)
+        return false;
+    
+    if (AMWhitelistGetCount(obj) == 0)
+        return false;
+    
+    return AMListContainsString(obj->list, line);
+}
 

@@ -19,6 +19,8 @@ bool AMGlobalsGetGloballyAllowedProcess(AMWhitelistRef global_whitelist, const c
 /// When the global\_blacklist parameter is not NULL, checks if the process at path is blacklisted, else returns false. Note, this is the inverse outcome of the tweak-level blacklist check when the list is NULL. This is because a global blacklist is not required to be used.
 bool AMGlobalsGetGloballyBlacklistedProcess(AMBlacklistRef global_blacklist, const char *path);
 
+/// Checks if the process name is in the global whitelist with 'BypassPrio=' as a prefix.
+bool AMGlobalsGetPRIOBypassStatusForProcess(AMWhitelistRef global_whitelist, const char *path);
 #ifdef __cplusplus
 }
 #endif
