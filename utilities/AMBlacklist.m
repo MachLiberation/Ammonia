@@ -114,55 +114,19 @@ bool AMBlacklistGetExecutableIsBlacklisted(AMBlacklistRef obj, CFURLRef executab
     
     bool contains = AMListContainsString(obj->list, last_path_component);
     
+    if (!contains){
+        contains = CFStringCompare(last_path_component,
+                                   CFSTR("SystemUIServer"),
+                                   0) == kCFCompareEqualTo;
+    }
+    
     CFRelease(last_path_component);
     
     return contains;
 }
 
-static bool PathContainsTypicallyProblematicDirectory(CFStringRef application_full_path){
-    CFArrayRef components = CFStringCreateArrayBySeparatingStrings(kCFAllocatorDefault,
-                                                                   application_full_path,
-                                                                   CFSTR("/"));
-    
-    if (components == NULL)
-        return true;
-    
-    CFStringRef problematic[] = {
-        CFSTR("libexec"),
-        CFSTR("sbin"),
-        CFSTR("DriverExtensions"),
-        CFSTR("Frameworks"),
-        CFSTR("PrivateFrameworks"),
-    };
-    
-    CFIndex problematic_count = sizeof(problematic) / sizeof(problematic[0]);
-    CFIndex count = CFArrayGetCount(components);
-    bool found = false;
-    
-    for (CFIndex i = 0; i < count && !found; i++){
-        CFStringRef component =
-            CFArrayGetValueAtIndex(components, i);
-        
-        for (CFIndex j = 0; j < problematic_count; j++){
-            if (CFStringCompare(component,
-                                problematic[j],
-                                0) == kCFCompareEqualTo){
-                found = true;
-                break;
-            }
-        }
-    }
-    
-    CFRelease(components);
-    
-    return found;
-}
-
 bool AMBlacklistGetFullPathIsBlacklisted(AMBlacklistRef obj, CFStringRef path){
     if (obj == NULL || path == NULL || obj->list == NULL)
-        return true;
-
-    if (PathContainsTypicallyProblematicDirectory(path))
         return true;
 
     if (AMBlacklistGetCount(obj) == 0)

@@ -117,11 +117,32 @@ bool AMGlobalsGetGloballyBlacklistedProcess(AMBlacklistRef global_blacklist, con
     return disallowed;
 }
 
-bool AMGlobalsGetPRIOBypassStatusForProcess(AMWhitelistRef global_whitelist, const char *path){
-    if (global_whitelist == NULL || path == NULL)
+static bool ProcessIsAlwaysOKForPRIO(CFStringRef process_name){
+    if (!process_name)
         return false;
     
-    if (AMWhitelistGetCount(global_whitelist) == 0)
+    CFStringRef always_allowed[] = {
+        CFSTR("QuickLookUIHelper"),
+        CFSTR("UserNotificationCenter")
+    };
+    
+    CFIndex allowed_count = sizeof(always_allowed) / sizeof(always_allowed[0]);
+    
+    bool found = false;
+    for (CFIndex i = 0; i < allowed_count && !found; i++){
+        if (CFStringCompare(process_name,
+                            always_allowed[i],
+                            0) == kCFCompareEqualTo){
+            found = true;
+            break;
+        }
+    }
+    
+    return found;
+}
+
+bool AMGlobalsGetPRIOBypassStatusForProcess(AMWhitelistRef global_whitelist, const char *path){
+    if (path == NULL)
         return false;
     
     CFStringRef path_cfstr = CFStringCreateWithCString(kCFAllocatorDefault,
@@ -149,6 +170,27 @@ bool AMGlobalsGetPRIOBypassStatusForProcess(AMWhitelistRef global_whitelist, con
         return false;
     }
     
+    if (ProcessIsAlwaysOKForPRIO(last_comp)){
+        CFRelease(last_comp);
+        CFRelease(path_cfstr);
+        CFRelease(path_URL);
+        return true;
+    }
+    
+    if (global_whitelist == NULL){
+        CFRelease(last_comp);
+        CFRelease(path_cfstr);
+        CFRelease(path_URL);
+        return false;
+    }
+    
+    if (AMWhitelistGetCount(global_whitelist) == 0){
+        CFRelease(last_comp);
+        CFRelease(path_cfstr);
+        CFRelease(path_URL);
+        return false;
+    }
+    
     CFMutableStringRef mut_str = CFStringCreateMutableCopy(kCFAllocatorDefault, 0, CFSTR("BypassPrio="));
     
     if (!mut_str){
@@ -167,5 +209,7 @@ bool AMGlobalsGetPRIOBypassStatusForProcess(AMWhitelistRef global_whitelist, con
     CFRelease(path_cfstr);
     CFRelease(path_URL);
     CFRelease(last_comp);
+    CFRelease(mut_str);
+    
     return bypassed;
 }
