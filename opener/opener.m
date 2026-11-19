@@ -22,6 +22,7 @@
 #include <AMWhitelist.h>
 #include <AMBlacklist.h>
 #include <AMTweak.h>
+#include <AMSafeMode.h>
 
 #ifndef PATH_MAX
 #define PATH_MAX 4096
@@ -172,8 +173,18 @@ static int should_load_tweak(
 static void load_tweak(
     const char *path,
     const char *filename,
-    void *interceptor)
+    void *interceptor,
+    bool critical_host,
+    const char *host_name)
 {
+    /*
+     * Load fence: if this process dies (including PAC→SIGKILL) during
+     * dlopen/LoadFunction, .safemode.pending remains and the next spawn
+     * promotes to sticky live safemode.
+     */
+    if (critical_host)
+        AMSafeModeArmPending(host_name, filename);
+
     dlerror();
 
     void *handle = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
@@ -183,6 +194,8 @@ static void load_tweak(
 
         syslog(LOG_ERR, "Failed to load tweak %s: %s",
                path, error ? error : "unknown error");
+        if (critical_host)
+            AMSafeModeDisarmPending();
         return;
     }
 
@@ -196,6 +209,8 @@ static void load_tweak(
     if (error || !load) {
         syslog(LOG_ERR, "Tweak %s has no usable LoadFunction: %s",
                filename, error ? error : "symbol not found");
+        if (critical_host)
+            AMSafeModeDisarmPending();
         return;
     }
 
@@ -203,8 +218,13 @@ static void load_tweak(
 
     /*
      * Native crashes and Objective-C exceptions are not caught here.
+     * Critical hosts leave the pending fence armed across LoadFunction;
+     * Open() disarms after the full scan completes.
      */
     load(interceptor);
+
+    if (critical_host)
+        AMSafeModeArmPending(host_name, "(post-load)");
 }
 
 /*
@@ -216,6 +236,11 @@ void Open(void *interceptor)
 {
     if (!interceptor) {
         syslog(LOG_ERR, "Open: invalid Frida interceptor");
+        return;
+    }
+
+    if (AMSafeModeIsActive()) {
+        syslog(LOG_NOTICE, "Open: safemode active — skipping all tweaks");
         return;
     }
 
@@ -239,6 +264,11 @@ void Open(void *interceptor)
         syslog(LOG_ERR, "Open: could not determine executable path");
         goto done;
     }
+
+    const bool critical_host = AMSafeModeIsCriticalHost(executable_path);
+    const char *host_name = getprogname();
+    if (!host_name || !*host_name)
+        host_name = executable_path;
 
     char tweaks_directory[PATH_MAX];
 
@@ -305,13 +335,17 @@ void Open(void *interceptor)
             continue;
         }
 
-        load_tweak(path, filename, interceptor);
+        load_tweak(path, filename, interceptor, critical_host, host_name);
     }
 
     if (closedir(directory) != 0) {
         syslog(LOG_WARNING, "Error closing tweaks directory: %s",
                strerror(errno));
     }
+
+    /* Full scan finished without death — clear the load fence. */
+    if (critical_host)
+        AMSafeModeDisarmPending();
 
     free(executable_path);
 
@@ -421,6 +455,20 @@ int sandbox_init_with_parameters_new(const char *profile, uint64_t flags, const 
 void __attribute__((constructor)) ctor_main(void)
 {
     const bool is_windowserver = is_process("WindowServer");
+
+    (void)AMSafeModePromotePendingIfNeeded();
+
+    if (AMSafeModeIsCriticalHost(getprogname() ? getprogname() : "") ||
+        is_windowserver) {
+        AMSafeModeInstallCrashHandlers();
+    }
+
+    if (AMSafeModeIsActive()) {
+        syslog(LOG_NOTICE,
+               "opener: safemode active — refusing tweak load in %s",
+               getprogname() ? getprogname() : "unknown");
+        return;
+    }
 
     pthread_once(&gum_init_once, initialize_gum);
 

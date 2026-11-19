@@ -39,3 +39,9 @@ Vanish.c
 #Packages for build system
 frida-gum.h
 libfrida-gum.a
+
+# Safe Mode / Icon Composer
+*.webp
+!docs/
+!docs/icons/
+!docs/icons/**

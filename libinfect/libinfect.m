@@ -18,6 +18,7 @@
 #include <AMBlacklist.h>
 #include <AMTweak.h>
 #include <AMGlobalsProcessor.h>
+#include <AMSafeMode.h>
 
 #include <Foundation/Foundation.h>
 #include <dlfcn.h>
@@ -153,6 +154,14 @@ static bool IsAllowedProcess(uint64_t PRIO_DARWIN_ROLE_T,
                              AMBlacklistRef blacklist){
     if (!path)
         return false;
+
+    /*
+     * Sticky live safemode: quarantine AppKit / GUI and critical hosts
+     * (WindowServer, loginwindow, Dock, …). xpcproxy still receives
+     * libinfect so quarantine decisions stay live in launchd.
+     */
+    if (AMSafeModeIsActive())
+        return false;
     
     if (AMGlobalsGetGloballyAllowedProcess(whitelist,
                                            path)
@@ -177,13 +186,17 @@ static int SpawnWrapper(
     char *const envp[],
     bool spawnp)
 {
+    /* Live promote: unclean critical-host death → sticky quarantine now. */
+    (void)AMSafeModePromotePendingIfNeeded();
+
     AMWhitelistRef global_whitelist = NULL;
     AMBlacklistRef global_blacklist = NULL;
     AMError wl_creation_result = AMWhitelistCreateFromGlobalWhitelist(&global_whitelist);
     AMError bl_creation_result = AMBlacklistCreateFromGlobalBlacklist(&global_blacklist);
     
     if (getpid() == 1 && WindowServerSetForLoadingAfterBoot == false){
-        if (AMGlobalsGetWindowServerInjectionIsAllowed(global_whitelist))
+        if (!AMSafeModeIsActive() &&
+            AMGlobalsGetWindowServerInjectionIsAllowed(global_whitelist))
             ApplyWindowServerFix();
     }
     

@@ -3,7 +3,16 @@
 #include <mach/mach_vm.h>
 #include <dlfcn.h>
 #include <stdio.h>
+#include <sys/stat.h>
 #include <unistd.h>
+
+#include "ammonia.h"
+
+static bool ammonia_bootstrap_disabled(void)
+{
+    struct stat st;
+    return stat(SupportFolderP ".safemode.disable", &st) == 0;
+}
 
 #ifdef __arm64e__
 #include <ptrauth.h>
@@ -114,6 +123,16 @@ int main(int argc, char **argv)
     vm_size_t stack_size = 16 * 1024;
     uint64_t stack_contents = 0x00000000CAFEBABE;
     pid_t pid = 1;
+
+    (void)argc;
+    (void)argv;
+
+    if (ammonia_bootstrap_disabled()) {
+        fprintf(stderr,
+                "ammonia: bootstrap disabled via %s.safemode.disable\n",
+                SupportFolderP);
+        return 0;
+    }
 
     if (!pid) {
         fprintf(stderr, "could not locate Dock.app pid\n");
